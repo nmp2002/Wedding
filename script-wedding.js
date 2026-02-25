@@ -184,6 +184,17 @@
 
         heroBannerImg: byId('heroBannerImg'),
 
+        mainMapLink: byId('mainMapLink'),
+        mainVenue: byId('mainVenue'),
+        mainAddress: byId('mainAddress'),
+
+        e1Map: byId('e1Map'),
+        e2Map: byId('e2Map'),
+        e3Map: byId('e3Map'),
+        e1Addr: byId('e1Addr'),
+        e2Addr: byId('e2Addr'),
+        e3Addr: byId('e3Addr'),
+
         rsvpForm: byId('rsvpForm'),
         rsvpName: byId('rsvpName'),
         rsvpYes: byId('rsvpYes'),
@@ -191,6 +202,69 @@
         rsvpAttend: byId('rsvpAttend'),
         rsvpHint: byId('rsvpHint'),
       };
+
+      function isLikelyPlaceholder(text) {
+        const s = String(text || '').trim();
+        if (!s) return true;
+        if (/^#?$/.test(s)) return true;
+        if (/\(\s*địa\s*chỉ\s*\)/i.test(s)) return true;
+        if (/\(\s*tên\s*ngân\s*hàng\s*\)/i.test(s)) return true;
+        if (/\(\s*số\s*tài\s*khoản\s*\)/i.test(s)) return true;
+        if (/\(\s*tên\s*chủ\s*tài\s*khoản\s*\)/i.test(s)) return true;
+        return false;
+      }
+
+      function toMapsSearchUrl(query) {
+        const q = String(query || '').trim();
+        if (!q) return '';
+        return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+      }
+
+      function normalizeExternalUrl(raw) {
+        const s = String(raw || '').trim();
+        if (!s) return '';
+        if (/^(https?:)?\/\//i.test(s)) return s;
+        // allow "goo.gl/maps/..." style
+        if (/^goo\.gl\//i.test(s)) return 'https://' + s;
+        return s;
+      }
+
+      function applyMapLink(anchor, rawUrl, fallbackQuery) {
+        if (!anchor) return;
+        const url = normalizeExternalUrl(rawUrl);
+        const fallbackUrl = toMapsSearchUrl(fallbackQuery);
+        const finalUrl = url || fallbackUrl;
+        if (!finalUrl) {
+          anchor.setAttribute('href', '#');
+          return;
+        }
+        anchor.setAttribute('href', finalUrl);
+      }
+
+      function initMapLinks() {
+        // Main map link: prefer explicit URL params
+        const mainMap = readParam('map', 'maps', 'maplink', 'map_url', 'mainmap', 'main_map');
+        const venueText = els.mainVenue ? (els.mainVenue.textContent || '').trim() : '';
+        const addressText = els.mainAddress ? (els.mainAddress.textContent || '').trim() : '';
+        const mainQuery = [venueText, addressText]
+          .map((s) => String(s || '').replace(/^\s*Tại:\s*/i, '').trim())
+          .filter((s) => s && !isLikelyPlaceholder(s))
+          .join(' - ');
+        applyMapLink(els.mainMapLink, mainMap, mainQuery);
+
+        // Event map links
+        const e1Map = readParam('e1map', 'event1map', 'map1');
+        const e2Map = readParam('e2map', 'event2map', 'map2');
+        const e3Map = readParam('e3map', 'event3map', 'map3');
+
+        const e1Query = els.e1Addr ? (els.e1Addr.textContent || '').replace(/^\s*Tại:\s*/i, '').trim() : '';
+        const e2Query = els.e2Addr ? (els.e2Addr.textContent || '').replace(/^\s*Tại:\s*/i, '').trim() : '';
+        const e3Query = els.e3Addr ? (els.e3Addr.textContent || '').replace(/^\s*Tại:\s*/i, '').trim() : '';
+
+        applyMapLink(els.e1Map, e1Map, isLikelyPlaceholder(e1Query) ? '' : e1Query);
+        applyMapLink(els.e2Map, e2Map, isLikelyPlaceholder(e2Query) ? '' : e2Query);
+        applyMapLink(els.e3Map, e3Map, isLikelyPlaceholder(e3Query) ? '' : e3Query);
+      }
 
       function initNames() {
         const bride = readParam('bride', 'codau', 'bridename');
@@ -785,6 +859,7 @@
         initCalendarAndCountdown();
         initHeroBannerSlideshow();
         initInviteDateParts();
+        initMapLinks();
         initMusic();
         initRSVP();
         initMenu();
