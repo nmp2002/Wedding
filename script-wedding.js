@@ -627,12 +627,16 @@
         if (!btn || !audio) return;
 
         const storageKey = 'wedding_bgm_enabled';
-        let isEnabled = false;
+        // "isEnabled" is the desired preference, not necessarily current playback state.
+        let isEnabled = true;
 
         try {
-          isEnabled = localStorage.getItem(storageKey) === '1';
+          const stored = localStorage.getItem(storageKey);
+          if (stored === '0') isEnabled = false;
+          else if (stored === '1') isEnabled = true;
+          else isEnabled = true; // default: ON
         } catch (e) {
-          isEnabled = false;
+          isEnabled = true;
         }
 
         function setDisabled(label) {
@@ -656,6 +660,22 @@
         audio.volume = 0.75;
         audio.playsInline = true;
 
+        let armed = false;
+        function armStartOnGesture() {
+          if (armed) return;
+          armed = true;
+
+          const handler = () => {
+            // Try again on the first user interaction.
+            start(true);
+          };
+
+          // Use capture so we run early, and once so we clean up.
+          document.addEventListener('pointerdown', handler, { once: true, passive: true, capture: true });
+          document.addEventListener('touchstart', handler, { once: true, passive: true, capture: true });
+          document.addEventListener('keydown', handler, { once: true, passive: true, capture: true });
+        }
+
         function syncUI() {
           const isPlaying = !audio.paused && !audio.ended;
           btn.classList.toggle('isPlaying', isPlaying);
@@ -668,14 +688,24 @@
           setDisabled('Chưa Có Nhạc');
         }
 
-        async function start() {
+        async function start(fromGesture) {
           try {
+            // If user prefers music on, hint preload earlier.
+            if (isEnabled) audio.preload = 'auto';
             await audio.play();
             isEnabled = true;
             try { localStorage.setItem(storageKey, '1'); } catch (e) {}
           } catch (e) {
-            isEnabled = false;
-            try { localStorage.setItem(storageKey, '0'); } catch (e) {}
+            const errName = e && typeof e === 'object' && 'name' in e ? String(e.name) : '';
+            // Autoplay with sound is often blocked until a user gesture.
+            if (!fromGesture && (errName === 'NotAllowedError' || errName === 'AbortError')) {
+              isEnabled = true;
+              try { localStorage.setItem(storageKey, '1'); } catch (e2) {}
+              armStartOnGesture();
+            } else {
+              isEnabled = false;
+              try { localStorage.setItem(storageKey, '0'); } catch (e2) {}
+            }
           }
           syncUI();
         }
@@ -703,7 +733,7 @@
           setMissingState();
         });
 
-        if (isEnabled) start();
+        if (isEnabled) start(false);
       }
 
       function init() {
