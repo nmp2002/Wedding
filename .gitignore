@@ -1,0 +1,25 @@
+# OS / junk
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node (if any in root)
+node_modules/
+
+# Build artifacts (root)
+dist/
+out/
+
+# Angular (root)
+.angular/cache/
+
+# VS Code (keep workspace settings)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

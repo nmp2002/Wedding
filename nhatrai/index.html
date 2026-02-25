@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thiệp Mời Cưới Online — Nhà Trai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Great+Vibes&family=Sacramento&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css?v=light-20260225story1" />
+  <script>
+    document.documentElement.classList.add('js');
+  </script>
+</head>
+<body data-side="nhatrai">
+  <main class="page" aria-label="Thiệp mời cưới — Nhà trai">
+    <div class="topNav" aria-label="Thanh điều hướng">
+      <div class="topNavInner topNavInnerMenu">
+        <a class="topNavLogo" href="../" aria-label="Trang chủ">
+          <span class="logoMark" aria-hidden="true">HH</span>
+        </a>
+        <button class="menuBtn" id="menuToggle" type="button" aria-haspopup="dialog" aria-controls="menuPanel" aria-expanded="false">
+          <span class="menuIcon" aria-hidden="true"></span>
+          <span class="srOnly">Mở menu</span>
+        </button>
+      </div>
+    </div>
+    <div class="menuBackdrop" id="menuBackdrop" hidden></div>
+    <nav class="menuPanel" id="menuPanel" aria-label="Menu" hidden>
+      <a class="menuItem" href="#invite">Thiệp Mời</a>
+      <a class="menuItem" href="#couple">Chú Rể &amp; Cô Dâu</a>
+      <a class="menuItem" href="#album">Album ảnh</a>
+      <a class="menuItem" href="#events">Lịch sự kiện cưới</a>
+      <a class="menuItem" href="#wishes">Gửi lời chúc mừng</a>
+      <a class="menuItem" href="#rsvp">Xác nhận tham dự</a>
+      <a class="menuItem" href="#gift">Mừng cưới</a>
+    </nav>
+    <section class="hero" aria-label="Mở đầu">
+      <div class="sky" aria-hidden="true"><div class="glow"></div></div>
+      <div class="heroInner">
+        <div class="heroNames" aria-label="Tên cô dâu chú rể">
+          <div class="heroKicker" id="heroKicker">THÂN MỜI TỚI DỰ BỮA TIỆC</div>
+          <span id="heroGroom">Đại Dương</span>
+          <span class="heroAmp">&amp;</span>
+          <span id="heroBride">Nguyễn Phương</span>
+        </div>
+
+        <div class="heroBanner" id="heroBanner" aria-label="Ảnh cưới">
+          <img class="heroBannerImg" id="heroBannerImg" alt="Ảnh cưới" loading="eager" src="../images/banner.jpg" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section inviteCard" id="invite" aria-label="Thiệp mời">
+      <div class="inviteFrame">
+        <div class="inviteFrameInner">
+          <div class="invitePhotoWrap" aria-label="Ảnh cô dâu chú rể">
+            <div class="invitePhotoRing">
+              <img id="invitePhoto" alt="Ảnh cô dâu chú rể" loading="lazy" src="../images/banner.jpg" />
+              <div class="invitePhotoFallback" id="invitePhotoFallback" hidden></div>
+            </div>
+          </div>
+
+          <div class="inviteSaveLabel" aria-hidden="true">SAVE THE DATE</div>
+          <div class="inviteCouple" id="inviteCouple">Đại Dương &amp; Nguyễn Phương</div>
+
+          <div class="inviteHonorLine" aria-hidden="true">TRÂN TRỌNG KÍNH MỜI</div>
+          <div class="srOnly">Trân trọng kính mời</div>
+          <div class="inviteGuestName" id="guestName">bạn</div>
+
+          <div class="inviteLead" id="inviteLead">Đến dự buổi tiệc chung vui cùng gia đình chúng tôi</div>
+
+          <div class="inviteDateBlock" aria-label="Thời gian tổ chức">
+            <div class="inviteTimeLine" id="mainWhenTime">18 GIỜ 00</div>
+            <div class="inviteDateRow" aria-label="Ngày tổ chức">
+              <div class="inviteDow" id="mainWhenDow">THỨ</div>
+              <div class="inviteDayNum" id="mainWhenDay">29</div>
+              <div class="inviteMonthYear" id="mainWhenMonthYear">3 - 2026</div>
+            </div>
+            <div class="inviteLunar" id="mainLunar">(Nhằm ngày …)</div>
+            <div class="inviteWhen srOnly" id="mainWhenText">18:00 • 29/03/2026</div>
+          </div>
+
+          <div class="inviteWhere" id="mainWhereText">Tại: <span id="mainVenue">Tư gia nhà trai</span></div>
+          <div class="inviteAddr" id="mainAddress">(Địa chỉ nhà trai)</div>
+          <div class="inviteNote" id="inviteNote">Sự hiện diện của quý khách là niềm vinh dự cho gia đình chúng tôi!</div>
+        </div>
+      </div>
+      <div class="inviteActionsBar" aria-label="Hành động">
+        <a class="inviteActionBtn" href="#rsvp">Xác nhận tham dự</a>
+        <a class="inviteActionBtn" id="mainMapLink" href="#" target="_blank" rel="noopener">Xem bản đồ</a>
+      </div>
+    </section>
+
+    <section class="section saveDate" aria-label="Save the date">
+      <div class="saveBigDate" id="saveBigDate">29.03</div>
+      <div class="saveScript" aria-hidden="true">
+        <img class="saveScriptImg" src="../images/save-date.png?v=20260225a" alt="" loading="lazy" decoding="async" />
+        <svg viewBox="0 0 1000 260" role="img" focusable="false" aria-hidden="true">
+          <path class="saveLine" d="
+            M26 152
+            C120 120, 200 120, 288 146
+            C332 160, 374 166, 410 162
+            C446 158, 476 150, 500 152
+            C524 150, 554 158, 590 162
+            C626 166, 668 160, 712 146
+            C800 120, 880 120, 974 152
+          " />
+
+          <text class="saveWord" x="466" y="196" text-anchor="end">save</text>
+          <path class="saveHeart" d="
+            M500 184
+            C500 168, 482 160, 470 171
+            C458 183, 462 202, 478 214
+            C490 223, 500 228, 500 228
+            C500 228, 510 223, 522 214
+            C538 202, 542 183, 530 171
+            C518 160, 500 168, 500 184
+          " />
+          <text class="saveWord" x="534" y="196" text-anchor="start">date</text>
+        </svg>
+      </div>
+      <div class="saveTitle srOnly">SAVE THE DATE</div>
+      <h2 class="inviteHeadingTitle saveNextTitle">Thiệp Mời</h2>
+      <div class="inviteHeadingSub saveNextSub">Trân trọng kính mời!</div>
+    </section>
+
+    <section class="section" id="couple" aria-label="Chú rể và cô dâu">
+      <h2 class="coupleTitle">Chú Rể &amp; Cô Dâu</h2>
+      <div class="coupleGrid" aria-label="Thông tin chú rể và cô dâu">
+        <article class="personCard" aria-label="Chú rể">
+          <div class="personPhoto">
+            <img id="groomPhoto" alt="Ảnh chú rể" loading="lazy" src="../images/banner.jpg" />
+            <div class="photoFallback" id="groomPhotoFallback" hidden>CR</div>
+          </div>
+          <div class="personName" id="groomName">Đại Dương</div>
+          <div class="personParents" id="groomParents" aria-label="Thông tin bố mẹ chú rể">
+            <div><span class="parentLabel">Bố :</span> <strong>(Tên bố)</strong></div>
+            <div><span class="parentLabel">Mẹ :</span> <strong>(Tên mẹ)</strong></div>
+          </div>
+          <div class="personAddr" id="groomAddress" hidden>(Địa chỉ nhà trai)</div>
+        </article>
+
+        <article class="personCard" aria-label="Cô dâu">
+          <div class="personPhoto">
+            <img id="bridePhoto" alt="Ảnh cô dâu" loading="lazy" src="../images/phuong.jpg" />
+            <div class="photoFallback" id="bridePhotoFallback" hidden>CD</div>
+          </div>
+          <div class="personName" id="brideName">Nguyễn Phương</div>
+          <div class="personParents" id="brideParents" aria-label="Thông tin bố mẹ cô dâu">
+            <div><span class="parentLabel">Bố :</span> <strong>(Tên bố)</strong></div>
+            <div><span class="parentLabel">Mẹ :</span> <strong>(Tên mẹ)</strong></div>
+          </div>
+          <div class="personAddr" id="brideAddress" hidden>(Địa chỉ nhà gái)</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="album" aria-label="Kỷ niệm">
+      <h2 class="sectionTitle">OUR MEMORIES</h2>
+      <div class="memoriesGrid" id="memoriesGrid">
+        <div class="memoryTile" aria-label="Kỷ niệm 1"></div>
+        <div class="memoryTile" aria-label="Kỷ niệm 2"></div>
+        <div class="memoryTile" aria-label="Kỷ niệm 3"></div>
+        <div class="memoryTile" aria-label="Kỷ niệm 4"></div>
+        <div class="memoryTile" aria-label="Kỷ niệm 5"></div>
+        <div class="memoryTile" aria-label="Kỷ niệm 6"></div>
+      </div>
+    </section>
+
+    <section class="section weddingSchedule" aria-label="Đếm ngược">
+      <h2 class="sectionTitle">LỊCH CƯỚI CHÚNG MÌNH</h2>
+
+      <div class="weddingCal" aria-label="Lịch cưới">
+        <div class="calHeader">
+          <div class="calTitle" id="calTitle">THÁNG 3 - 2026</div>
+          <div class="calNav" aria-label="Điều hướng tháng">
+            <button class="calNavBtn" type="button" id="calPrev" aria-label="Tháng trước">‹</button>
+            <button class="calNavBtn" type="button" id="calNext" aria-label="Tháng sau">›</button>
+          </div>
+        </div>
+
+        <div class="calWeekdays" aria-hidden="true">
+          <div>T2</div>
+          <div>T3</div>
+          <div>T4</div>
+          <div>T5</div>
+          <div>T6</div>
+          <div>T7</div>
+          <div>CN</div>
+        </div>
+
+        <div class="calGrid" id="calGrid" role="grid" aria-label="Lịch tháng"></div>
+      </div>
+
+      <div class="calWhen" id="calWhenText">18:00 Chủ Nhật, Ngày 29/03/2026</div>
+      <div class="calLunar" id="calLunarText">(Tức ngày 00/00)</div>
+
+      <div class="countdownTarget countdownTargetRaw" id="countdownTargetText">18:00 • 29/03/2026</div>
+      <div class="countdown" role="timer" aria-live="polite">
+        <div class="cdItem"><div class="cdNum" id="cdDays">00</div><div class="cdLabel">Ngày</div></div>
+        <div class="cdItem"><div class="cdNum" id="cdHours">00</div><div class="cdLabel">Giờ</div></div>
+        <div class="cdItem"><div class="cdNum" id="cdMinutes">00</div><div class="cdLabel">Phút</div></div>
+        <div class="cdItem"><div class="cdNum" id="cdSeconds">00</div><div class="cdLabel">Giây</div></div>
+      </div>
+    </section>
+
+    <section class="section storySection" aria-label="Lời ngỏ">
+      <div class="storyCard" role="note" aria-label="Lời ngỏ">
+        <div class="storyBg" aria-hidden="true"></div>
+        <div class="storyOverlay" aria-hidden="true"></div>
+        <div class="storyContent">
+          <h2 class="storyHeading">Lời Ngỏ</h2>
+          <div class="storyText" id="storyText">
+            Thật là vinh hạnh và trọn vẹn khi ngày hạnh phúc nhất cuộc đời chúng tôi có sự hiện diện và chúc phúc của bạn. Chân thành cảm ơn!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="wishes" aria-label="Gửi lời chúc">
+      <h2 class="sectionTitle">GỬI LỜI CHÚC ĐẾN CẶP ĐÔI</h2>
+      <div class="wishesLead">Gửi lời chúc cho Dâu Rể</div>
+      <a class="btnSecondary" id="wishesLink" href="#" target="_blank" rel="noopener">Gửi lời chúc</a>
+    </section>
+
+    <section class="section" id="events" aria-label="Sự kiện cưới">
+      <h2 class="sectionTitle">SỰ KIỆN CƯỚI</h2>
+      <div class="eventsGrid">
+        <article class="eventCard" aria-label="Sự kiện 1">
+          <div class="eventTitle" id="e1Title">Tiệc Cưới</div>
+          <div class="eventTime" id="e1Time">16:00 • 29/03/2026</div>
+          <div class="eventAddr" id="e1Addr">Tại: (Địa chỉ nhà trai)</div>
+          <div class="eventActions">
+            <a class="btnPrimary" id="e1Map" href="#" target="_blank" rel="noopener">Xem bản đồ</a>
+            <a class="btnSecondary" href="#rsvp">Xác nhận tham dự</a>
+          </div>
+        </article>
+
+        <article class="eventCard" aria-label="Sự kiện 2">
+          <div class="eventTitle" id="e2Title">Lễ Thành Hôn</div>
+          <div class="eventTime" id="e2Time">18:00 • 29/03/2026</div>
+          <div class="eventAddr" id="e2Addr">Tại: (Địa chỉ nhà trai)</div>
+          <div class="eventActions">
+            <a class="btnPrimary" id="e2Map" href="#" target="_blank" rel="noopener">Xem bản đồ</a>
+            <a class="btnSecondary" href="#rsvp">Xác nhận tham dự</a>
+          </div>
+        </article>
+
+        <article class="eventCard" aria-label="Sự kiện 3">
+          <div class="eventTitle" id="e3Title">Lễ Nạp Tài</div>
+          <div class="eventTime" id="e3Time">08:00 • 28/03/2026</div>
+          <div class="eventAddr" id="e3Addr">Tại: (Địa chỉ nhà gái)</div>
+          <div class="eventActions">
+            <a class="btnPrimary" id="e3Map" href="#" target="_blank" rel="noopener">Xem bản đồ</a>
+            <a class="btnSecondary" href="#rsvp">Xác nhận tham dự</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="rsvp" aria-label="Xác nhận tham dự">
+      <h2 class="sectionTitle">HÃY XÁC NHẬN SỰ CÓ MẶT CỦA BẠN</h2>
+      <form class="rsvp" id="rsvpForm">
+        <div class="rsvpGrid">
+          <label class="rsvpField">
+            <div class="rsvpLabel">Họ tên của bạn</div>
+            <input class="rsvpInput" id="rsvpName" type="text" autocomplete="name" />
+          </label>
+          <label class="rsvpField">
+            <div class="rsvpLabel">Số điện thoại</div>
+            <input class="rsvpInput" id="rsvpPhone" type="tel" autocomplete="tel" />
+          </label>
+          <label class="rsvpField">
+            <div class="rsvpLabel">Bạn là khách mời của ai?</div>
+            <select class="rsvpInput" id="rsvpSide">
+              <option value="">Chọn…</option>
+              <option value="nhatrai">Nhà trai</option>
+              <option value="nhagai">Nhà gái</option>
+            </select>
+          </label>
+          <label class="rsvpField">
+            <div class="rsvpLabel">Bạn sẽ tham gia chứ?</div>
+            <select class="rsvpInput" id="rsvpAttend">
+              <option value="">Chọn…</option>
+              <option value="yes">Có, tôi sẽ tham gia</option>
+              <option value="no">Xin lỗi, tôi bận mất rồi!</option>
+            </select>
+          </label>
+        </div>
+        <div class="rsvpActions">
+          <button class="btnPrimary" type="submit" id="rsvpSubmit">Gửi xác nhận</button>
+        </div>
+        <div class="rsvpHint" id="rsvpHint">Thiệp này không có máy chủ. Bạn có thể cấu hình link RSVP qua URL param.</div>
+      </form>
+    </section>
+
+    <section class="section" id="gift" aria-label="Mừng cưới">
+      <h2 class="sectionTitle">MỪNG CƯỚI</h2>
+      <div class="giftLead">Nếu bạn muốn gửi quà mừng, bạn có thể dùng thông tin bên dưới.</div>
+      <div class="giftBox" role="note" aria-label="Thông tin mừng cưới">
+        <div><strong>Ngân hàng:</strong> (Tên ngân hàng)</div>
+        <div><strong>Số tài khoản:</strong> (Số tài khoản)</div>
+        <div><strong>Chủ tài khoản:</strong> (Tên chủ tài khoản)</div>
+      </div>
+    </section>
+
+    <footer class="pageFooter" aria-label="Lời cảm ơn">
+      <div class="footerThanks" id="footerThanks">Thank You! Sự hiện diện của quý vị là niềm vinh hạnh cho gia đình chúng tôi.</div>
+      <div class="footerBrand" id="footerBrand">HAPPY WEDDING</div>
+    </footer>
+  </main>
+
+  <button class="musicBtn" id="musicToggle" type="button" aria-label="Phát nhạc" aria-pressed="false" hidden>
+    <span class="srOnly">Phát nhạc</span>
+    <svg class="musicIcon musicIconPlay" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+    <svg class="musicIcon musicIconPause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+    </svg>
+  </button>
+  <audio id="bgm" preload="none" loop src="../images/Until%20You.mp3"></audio>
+
+  <script src="../script-wedding.js?v=light-20260225music5"></script>
+</body>
+</html>

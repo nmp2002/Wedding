@@ -1,0 +1,24 @@
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="title">Grand Christmas Tree</div>
+      <div class="subtitle">3D tree + ảnh polaroid bay quanh (Angular + Three.js)</div>
+    </div>
+
+    <div class="actions">
+      <label class="file">
+        <input type="file" accept="image/*" multiple (change)="onPhotosSelected($any($event.target))" />
+        <span>Chọn nhiều ảnh</span>
+      </label>
+      <button class="btn" type="button" (click)="clearPhotos()">Xóa ảnh</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="canvasHost" #host></div>
+
+    <div class="hint">
+      Kéo chuột để xoay • Lăn để zoom • Ảnh sẽ bay quanh cây
+    </div>
+  </div>
+</div>

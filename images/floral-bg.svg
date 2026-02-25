@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1600" width="1000" height="1600">
+  <defs>
+    <linearGradient id="wash" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.86" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.72" />
+    </linearGradient>
+
+    <g id="flower">
+      <g opacity="0.6" fill="none" stroke="#d05a6b" stroke-width="2">
+        <ellipse cx="0" cy="-22" rx="10" ry="18" />
+        <ellipse cx="18" cy="-10" rx="10" ry="18" transform="rotate(35)" />
+        <ellipse cx="22" cy="8" rx="10" ry="18" transform="rotate(75)" />
+        <ellipse cx="10" cy="22" rx="10" ry="18" transform="rotate(110)" />
+        <ellipse cx="-10" cy="22" rx="10" ry="18" transform="rotate(250)" />
+        <ellipse cx="-22" cy="8" rx="10" ry="18" transform="rotate(285)" />
+        <ellipse cx="-22" cy="-8" rx="10" ry="18" transform="rotate(315)" />
+        <ellipse cx="-10" cy="-22" rx="10" ry="18" transform="rotate(340)" />
+        <circle cx="0" cy="0" r="8" stroke="#c0843a" />
+      </g>
+    </g>
+
+    <g id="sprig" opacity="0.35" fill="none" stroke="#c0843a" stroke-width="2" stroke-linecap="round">
+      <path d="M0,0 C28,-42 76,-86 128,-108" />
+      <path d="M22,-34 C36,-30 44,-18 46,-4" />
+      <path d="M48,-64 C62,-60 70,-48 72,-34" />
+      <path d="M78,-88 C92,-84 100,-72 102,-58" />
+      <path d="M110,-104 C124,-100 132,-88 134,-74" />
+    </g>
+  </defs>
+
+  <!-- Soft paper wash -->
+  <rect x="0" y="0" width="1000" height="1600" fill="url(#wash)" />
+
+  <!-- Corner florals (subtle) -->
+  <g opacity="0.22">
+    <g transform="translate(120,160)">
+      <use href="#sprig" />
+      <g transform="translate(92,-52) scale(1.1)">
+        <use href="#flower" />
+      </g>
+      <g transform="translate(36,-6) scale(0.8)">
+        <use href="#flower" />
+      </g>
+    </g>
+
+    <g transform="translate(880,200) scale(-1,1)">
+      <use href="#sprig" />
+      <g transform="translate(92,-52) scale(1.05)">
+        <use href="#flower" />
+      </g>
+      <g transform="translate(36,-6) scale(0.75)">
+        <use href="#flower" />
+      </g>
+    </g>
+
+    <g transform="translate(140,1460) scale(1,-1)">
+      <use href="#sprig" />
+      <g transform="translate(92,-52) scale(1.05)">
+        <use href="#flower" />
+      </g>
+      <g transform="translate(36,-6) scale(0.78)">
+        <use href="#flower" />
+      </g>
+    </g>
+
+    <g transform="translate(880,1440) scale(-1,-1)">
+      <use href="#sprig" />
+      <g transform="translate(92,-52) scale(1.08)">
+        <use href="#flower" />
+      </g>
+      <g transform="translate(36,-6) scale(0.78)">
+        <use href="#flower" />
+      </g>
+    </g>
+  </g>
+
+  <!-- Light bokeh texture -->
+  <g opacity="0.08" fill="#c0843a">
+    <circle cx="160" cy="620" r="70" />
+    <circle cx="820" cy="560" r="90" />
+    <circle cx="520" cy="980" r="120" />
+  </g>
+</svg>
