@@ -517,6 +517,50 @@
         });
       }
 
+      function initFloatingDecor() {
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) return;
+
+        // Avoid duplicates if script runs twice.
+        if (document.querySelector('.floatLayer')) return;
+
+        const layer = document.createElement('div');
+        layer.className = 'floatLayer';
+        layer.setAttribute('aria-hidden', 'true');
+
+        const items = 16;
+        for (let i = 0; i < items; i++) {
+          const el = document.createElement('span');
+
+          const isHeart = Math.random() < 0.6;
+          el.className = 'floatItem ' + (isHeart ? 'isHeart' : 'isFlower');
+          // Simple, lightweight glyphs; color comes from CSS vars.
+          el.textContent = isHeart ? '❤' : '✿';
+
+          const x = Math.random() * 100;
+          const size = 14 + Math.random() * 18;
+          const dur = 9 + Math.random() * 9;
+          const sway = 2.6 + Math.random() * 2.8;
+          const drift = 8 + Math.random() * 22;
+          const op = 0.14 + Math.random() * 0.18;
+          const rot = (-20 + Math.random() * 40).toFixed(2) + 'deg';
+          const delay = (-Math.random() * dur).toFixed(2) + 's';
+
+          el.style.setProperty('--x', x.toFixed(2));
+          el.style.setProperty('--size', size.toFixed(2));
+          el.style.setProperty('--dur', dur.toFixed(2) + 's');
+          el.style.setProperty('--sway', sway.toFixed(2) + 's');
+          el.style.setProperty('--drift', drift.toFixed(2));
+          el.style.setProperty('--op', op.toFixed(3));
+          el.style.setProperty('--rot', rot);
+          el.style.setProperty('--delay', delay);
+
+          layer.appendChild(el);
+        }
+
+        document.body.appendChild(layer);
+      }
+
       function initScrollReveal() {
         const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (prefersReduced) return;
@@ -746,6 +790,7 @@
         initMenu();
         initSaveDateWordmark();
         initScrollReveal();
+        initFloatingDecor();
       }
 
       init();

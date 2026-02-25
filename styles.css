@@ -242,6 +242,45 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
   box-shadow: 0 18px 40px rgba(42,26,29,.08);
 }
 
+/* Floating decor layer (hearts/flowers) */
+.floatLayer{
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floatItem{
+  position: absolute;
+  left: calc(var(--x, 50) * 1vw);
+  bottom: -12vh;
+  font-size: calc(var(--size, 18) * 1px);
+  line-height: 1;
+  opacity: var(--op, .22);
+  transform: translate3d(0,0,0) rotate(var(--rot, 0deg));
+  will-change: transform, opacity;
+  animation:
+    floatUp var(--dur, 10s) linear infinite,
+    floatSway var(--sway, 3.6s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  filter: saturate(1.05);
+}
+
+.floatItem.isHeart{ color: var(--rose); }
+.floatItem.isFlower{ color: var(--accent); }
+
+@keyframes floatUp{
+  0%{ transform: translate3d(0,0,0) rotate(var(--rot, 0deg)); opacity: 0; }
+  10%{ opacity: var(--op, .22); }
+  100%{ transform: translate3d(0,-120vh,0) rotate(calc(var(--rot, 0deg) + 40deg)); opacity: 0; }
+}
+
+@keyframes floatSway{
+  0%,100%{ margin-left: 0; }
+  50%{ margin-left: calc(var(--drift, 14) * 1px); }
+}
+
 .hero, .section, footer{
   scroll-margin-top: 84px;
 }
@@ -348,7 +387,11 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
   .btnSecondary,
   .inviteActionBtn,
   .musicBtn,
-  .js .reveal{
+  .js .reveal,
+  .floatLayer,
+  .floatItem,
+  .inviteCard.reveal.isIn .inviteFrame,
+  .inviteCard.reveal.isIn .inviteFrame::after{
     transition: none !important;
     animation: none !important;
   }
@@ -359,6 +402,8 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
     opacity: 1;
     transform: none;
   }
+
+  .floatLayer{ display: none; }
 }
 
 .heroNames #heroGroom,
@@ -434,6 +479,44 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
   max-width: 760px;
   margin: 0 auto;
   background: url("images/letter.jpg") center / 100% 100% no-repeat;
+}
+
+/* Invite "open" effect (triggered by scroll reveal) */
+.inviteCard.reveal{ perspective: 1000px; }
+
+.inviteCard.reveal .inviteFrame{
+  transform-origin: 50% 20%;
+}
+
+.inviteCard.reveal.isIn .inviteFrame{
+  animation: inviteOpen 900ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+.inviteCard.reveal .inviteFrame::after{
+  content: "";
+  position: absolute;
+  inset: -12% -24%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 20%, rgba(255,255,255,.55) 48%, rgba(255,255,255,0) 62%);
+  transform: translate3d(-120%,0,0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inviteCard.reveal.isIn .inviteFrame::after{
+  opacity: 1;
+  animation: inviteShine 980ms ease-out 140ms both;
+}
+
+@keyframes inviteOpen{
+  0%{ transform: rotateX(-12deg) translate3d(0,10px,0) scale(.985); }
+  60%{ transform: rotateX(2deg) translate3d(0,-2px,0) scale(1.002); }
+  100%{ transform: none; }
+}
+
+@keyframes inviteShine{
+  0%{ transform: translate3d(-120%,0,0); opacity: 0; }
+  20%{ opacity: .9; }
+  100%{ transform: translate3d(120%,0,0); opacity: 0; }
 }
 
 .inviteFrame::before,
