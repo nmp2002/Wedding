@@ -745,17 +745,9 @@
         if (!btn || !audio) return;
 
         const storageKey = 'wedding_bgm_enabled';
-        // "isEnabled" is the desired preference, not necessarily current playback state.
+        // Always try to autoplay on every page load.
+        // Note: browsers may block autoplay with sound; we handle fallbacks.
         let isEnabled = true;
-
-        try {
-          const stored = localStorage.getItem(storageKey);
-          if (stored === '0') isEnabled = false;
-          else if (stored === '1') isEnabled = true;
-          else isEnabled = true; // default: ON
-        } catch (e) {
-          isEnabled = true;
-        }
 
         function setDisabled(label) {
           btn.hidden = false;
@@ -777,6 +769,7 @@
         audio.preload = 'none';
         audio.volume = 0.75;
         audio.playsInline = true;
+        audio.autoplay = true;
 
         let armed = false;
         function armStartOnGesture() {
@@ -785,6 +778,10 @@
 
           const handler = () => {
             // Try again on the first user interaction.
+            if (audio.muted) {
+              unmuteAndResume();
+              return;
+            }
             start(true);
           };
 
@@ -798,8 +795,14 @@
           const isPlaying = !audio.paused && !audio.ended;
           btn.classList.toggle('isPlaying', isPlaying);
           btn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-          btn.setAttribute('aria-label', isPlaying ? 'Tắt nhạc' : 'Phát nhạc');
-          btn.title = isPlaying ? 'Tắt nhạc' : 'Phát nhạc';
+
+          if (isPlaying && audio.muted) {
+            btn.setAttribute('aria-label', 'Bật âm thanh');
+            btn.title = 'Bật âm thanh';
+          } else {
+            btn.setAttribute('aria-label', isPlaying ? 'Tắt nhạc' : 'Phát nhạc');
+            btn.title = isPlaying ? 'Tắt nhạc' : 'Phát nhạc';
+          }
         }
 
         function setMissingState() {
@@ -817,9 +820,20 @@
             const errName = e && typeof e === 'object' && 'name' in e ? String(e.name) : '';
             // Autoplay with sound is often blocked until a user gesture.
             if (!fromGesture && (errName === 'NotAllowedError' || errName === 'AbortError')) {
-              isEnabled = true;
-              try { localStorage.setItem(storageKey, '1'); } catch (e2) {}
-              armStartOnGesture();
+              // Attempt muted autoplay (often permitted), then unmute on first gesture.
+              try {
+                audio.muted = true;
+                audio.preload = 'auto';
+                await audio.play();
+                isEnabled = true;
+                try { localStorage.setItem(storageKey, '1'); } catch (e2) {}
+                armStartOnGesture();
+              } catch (_) {
+                // If even muted autoplay fails, wait for gesture.
+                isEnabled = true;
+                try { localStorage.setItem(storageKey, '1'); } catch (e2) {}
+                armStartOnGesture();
+              }
             } else {
               isEnabled = false;
               try { localStorage.setItem(storageKey, '0'); } catch (e2) {}
@@ -828,8 +842,19 @@
           syncUI();
         }
 
+        function unmuteAndResume() {
+          audio.muted = false;
+          audio.volume = 0.75;
+          if (audio.paused || audio.ended) {
+            start(true);
+          } else {
+            syncUI();
+          }
+        }
+
         function stop() {
           audio.pause();
+          audio.muted = false;
           isEnabled = false;
           try { localStorage.setItem(storageKey, '0'); } catch (e) {}
           syncUI();
@@ -840,8 +865,14 @@
         syncUI();
 
         btn.addEventListener('click', () => {
-          if (!audio.paused && !audio.ended) stop();
-          else start();
+          const isPlaying = !audio.paused && !audio.ended;
+          if (isPlaying) {
+            if (audio.muted) unmuteAndResume();
+            else stop();
+          } else {
+            audio.muted = false;
+            start(true);
+          }
         });
 
         audio.addEventListener('play', syncUI);
