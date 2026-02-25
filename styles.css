@@ -107,10 +107,15 @@ body{
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease;
 }
 
 .menuBtn:hover{
   background: var(--accentBg2);
+}
+
+.menuBtn:active{
+  transform: translateY(1px);
 }
 
 .menuBtn:focus-visible{
@@ -141,6 +146,14 @@ body{
   inset: 0;
   z-index: 40;
   background: rgba(42,26,29,.10);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+body.isMenuOpen .menuBackdrop{
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .menuPanel{
@@ -154,6 +167,17 @@ body{
   border-radius: 16px;
   padding: 10px;
   box-shadow: 0 22px 60px rgba(42,26,29,.16);
+  opacity: 0;
+  transform: translate3d(0,-8px,0) scale(.98);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+
+body.isMenuOpen .menuPanel{
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
 }
 
 .menuItem{
@@ -164,7 +188,23 @@ body{
   color: rgba(42,26,29,.90);
   font-size: 22px;
   line-height: 1.2;
+  transform: translate3d(0,6px,0);
+  opacity: .98;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), opacity 220ms ease, background 140ms ease;
 }
+
+body.isMenuOpen .menuItem{
+  transform: none;
+  opacity: 1;
+}
+
+body.isMenuOpen .menuItem:nth-child(1){ transition-delay: 10ms; }
+body.isMenuOpen .menuItem:nth-child(2){ transition-delay: 30ms; }
+body.isMenuOpen .menuItem:nth-child(3){ transition-delay: 50ms; }
+body.isMenuOpen .menuItem:nth-child(4){ transition-delay: 70ms; }
+body.isMenuOpen .menuItem:nth-child(5){ transition-delay: 90ms; }
+body.isMenuOpen .menuItem:nth-child(6){ transition-delay: 110ms; }
+body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
 
 .menuItem:hover{
   background: var(--accentBg2);
@@ -299,6 +339,26 @@ body{
 
 @media (prefers-reduced-motion: reduce){
   .heroBannerImg{ transition: none; }
+
+  .menuBackdrop,
+  .menuPanel,
+  .menuItem,
+  .menuBtn,
+  .btnPrimary,
+  .btnSecondary,
+  .inviteActionBtn,
+  .musicBtn,
+  .js .reveal{
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .menuBackdrop,
+  .menuPanel,
+  .js .reveal{
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .heroNames #heroGroom,
@@ -341,6 +401,22 @@ body{
   padding: 16px;
   background: transparent;
   box-shadow: none;
+}
+
+/* Scroll-reveal (enabled by JS) */
+.js .reveal{
+  opacity: 0;
+  transform: translate3d(0,14px,0);
+  transition:
+    opacity 650ms ease,
+    transform 650ms cubic-bezier(.2,.8,.2,1);
+  transition-delay: var(--revealDelay, 0ms);
+  will-change: opacity, transform;
+}
+
+.js .reveal.isIn{
+  opacity: 1;
+  transform: none;
 }
 
 /* Decor: invite card (photo circle + frame like sample) */
@@ -662,9 +738,12 @@ body{
   font-weight: 750;
   background: rgba(42,26,29,.60);
   color: rgba(255,255,255,.92);
+  transition: transform 140ms ease, background 140ms ease;
 }
 
 .inviteActionBtn:hover{ background: rgba(42,26,29,.72); }
+
+.inviteActionBtn:active{ transform: translateY(1px); }
 
 .btnPrimary, .btnSecondary{
   margin: 12px auto 0 auto;
@@ -678,7 +757,10 @@ body{
   padding: 11px 14px;
   font-weight: 750;
   cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
 }
+
+.btnPrimary:active, .btnSecondary:active{ transform: translateY(1px); }
 
 .btnPrimary{
   border: 1px solid var(--accentLine);
@@ -1190,9 +1272,12 @@ body{
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: transform 140ms ease, background 140ms ease;
 }
 
 .musicBtn:hover{ background: rgba(192,132,58,.14); }
+
+.musicBtn:active{ transform: translateY(1px); }
 
 .musicBtn:disabled{
   opacity: .55;

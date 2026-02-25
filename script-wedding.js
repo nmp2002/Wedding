@@ -341,13 +341,46 @@
           return;
         }
 
-        // Lightweight slideshow, no fancy fade (CSS is minimal); just swap.
+        function swapTo(nextSrc) {
+          const img = els.heroBannerImg;
+          if (!img) return;
+          const src = normalizeAssetUrl(nextSrc);
+          if (!src) return;
+
+          // Fade between frames (CSS uses .isFading)
+          img.classList.add('isFading');
+
+          let settled = false;
+          const cleanup = () => {
+            if (settled) return;
+            settled = true;
+            img.classList.remove('isFading');
+            img.onload = null;
+            img.onerror = null;
+          };
+
+          img.onload = cleanup;
+          img.onerror = cleanup;
+
+          // Give opacity transition time to start before swapping src.
+          window.setTimeout(() => {
+            img.src = src;
+            // Safety: in case load event doesn't fire.
+            window.setTimeout(cleanup, 1200);
+          }, 170);
+        }
+
+        // Slideshow with fade
         let idx = 0;
         let alive = true;
+
+        // Ensure first frame is visible (no initial fade)
+        els.heroBannerImg.src = unique[0];
+
         const timer = setInterval(() => {
           if (!alive) return;
           idx = (idx + 1) % unique.length;
-          els.heroBannerImg.src = unique[idx];
+          swapTo(unique[idx]);
         }, 3500);
 
         window.addEventListener('beforeunload', () => {
@@ -399,20 +432,43 @@
         const backdrop = byId('menuBackdrop');
         if (!toggle || !panel || !backdrop) return;
 
+        const root = document.body;
+        let closeTimer = 0;
+
+        // Ensure clean initial state
+        if (root) root.classList.remove('isMenuOpen');
+
         function isOpen() {
-          return !panel.hidden;
+          return !!(root && root.classList.contains('isMenuOpen'));
         }
 
         function open() {
+          if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = 0;
+          }
           panel.hidden = false;
           backdrop.hidden = false;
           toggle.setAttribute('aria-expanded', 'true');
+
+          // Allow CSS transitions to run after un-hiding
+          requestAnimationFrame(() => {
+            if (root) root.classList.add('isMenuOpen');
+          });
         }
 
         function close() {
-          panel.hidden = true;
-          backdrop.hidden = true;
+          if (root) root.classList.remove('isMenuOpen');
           toggle.setAttribute('aria-expanded', 'false');
+
+          // Delay hiding until the closing transition ends.
+          closeTimer = window.setTimeout(() => {
+            // If re-opened before the timeout, keep visible.
+            if (root && root.classList.contains('isMenuOpen')) return;
+            panel.hidden = true;
+            backdrop.hidden = true;
+            closeTimer = 0;
+          }, 240);
         }
 
         toggle.addEventListener('click', () => {
@@ -458,6 +514,68 @@
             // keep SVG fallback
           };
           probe.src = src;
+        });
+      }
+
+      function initScrollReveal() {
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) return;
+
+        const html = document.documentElement;
+        if (!html || !html.classList.contains('js')) return;
+
+        const targets = [];
+        const seen = new Set();
+
+        function add(selector, opts) {
+          const nodes = document.querySelectorAll(selector);
+          if (!nodes || nodes.length === 0) return;
+          const stagger = Boolean(opts && opts.stagger);
+          const step = (opts && typeof opts.step === 'number') ? opts.step : 80;
+
+          nodes.forEach((el, idx) => {
+            if (!el || seen.has(el)) return;
+            seen.add(el);
+            el.classList.add('reveal');
+            if (stagger) el.style.setProperty('--revealDelay', `${idx * step}ms`);
+            targets.push(el);
+          });
+        }
+
+        add('.section');
+        add('.pageFooter');
+        add('.coupleGrid .personCard', { stagger: true, step: 90 });
+        add('.eventsGrid .eventCard', { stagger: true, step: 90 });
+        add('.memoriesGrid .memoryTile', { stagger: true, step: 70 });
+        add('.countdown .cdItem', { stagger: true, step: 70 });
+
+        if (targets.length === 0) return;
+
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach((el) => el.classList.add('isIn'));
+          return;
+        }
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              const el = entry.target;
+              el.classList.add('isIn');
+              io.unobserve(el);
+            }
+          },
+          { threshold: 0.16, rootMargin: '0px 0px -10% 0px' }
+        );
+
+        const fold = (window.innerHeight || 0) * 0.92;
+        targets.forEach((el) => {
+          const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+          if (r && r.top < fold) {
+            el.classList.add('isIn');
+            return;
+          }
+          io.observe(el);
         });
       }
 
@@ -597,6 +715,7 @@
         initRSVP();
         initMenu();
         initSaveDateWordmark();
+        initScrollReveal();
       }
 
       init();
