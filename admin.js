@@ -68,7 +68,18 @@
     return !!(window.WeddingDB && typeof window.WeddingDB.listGuests === 'function' && window.WeddingDB.isReady && window.WeddingDB.isReady());
   }
 
+  function ensureFirebaseInited() {
+    try {
+      if (window.WeddingDB && typeof window.WeddingDB.init === 'function') {
+        window.WeddingDB.init();
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
   function getAuth() {
+    ensureFirebaseInited();
     if (!window.firebase || typeof window.firebase.auth !== 'function') return null;
     return window.firebase.auth();
   }
@@ -211,15 +222,18 @@
   }
 
   function initAuth() {
-    const auth = getAuth();
-    if (!auth) {
-      setText(els.status, 'Thiếu Firebase SDK.');
+    // Init DB first so firebase.initializeApp runs before firebase.auth()
+    ensureFirebaseInited();
+
+    if (!canUseDb()) {
+      setText(els.status, 'Chưa cấu hình Firebase. Hãy điền firebase-config.js');
       setLoggedIn(false);
       return;
     }
 
-    if (!canUseDb()) {
-      setText(els.status, 'Chưa cấu hình Firebase. Hãy điền firebase-config.js');
+    const auth = getAuth();
+    if (!auth) {
+      setText(els.status, 'Thiếu Firebase SDK.');
       setLoggedIn(false);
       return;
     }
