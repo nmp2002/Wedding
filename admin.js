@@ -216,13 +216,21 @@
       setText(els.authHint, '');
       renderTable('Khách mời (guests)', lastGuests);
     } catch (err) {
-      const rawMsg = err && err.message ? String(err.message) : '';
-      const code = err && err.code ? String(err.code) : '';
-      const isDenied = /permission[- ]denied/i.test(rawMsg) || /permission[- ]denied/i.test(code) || /insufficient permissions/i.test(rawMsg);
-      const msg = isDenied
-        ? 'Không đủ quyền (permission-denied). Hãy thêm UID của bạn vào firestore.rules (isAdmin) rồi Publish/Deploy rules.'
-        : (rawMsg || 'Tải danh sách khách thất bại.');
-      setText(els.authHint, msg);
+      if (isPermissionDeniedError(err)) {
+        const ctx = getDebugAuthContext();
+        const parts = [
+          'Không đủ quyền (permission-denied).',
+          ctx.uid ? `UID hiện tại: ${ctx.uid}` : '',
+          ctx.projectId ? `projectId: ${ctx.projectId}` : '',
+          'Hãy thêm UID vào `firestore.rules` (hàm isAdmin) và deploy rules:',
+          'firebase login',
+          'firebase deploy --only firestore:rules',
+        ].filter(Boolean);
+        setText(els.authHint, parts.join(' '));
+      } else {
+        const rawMsg = err && err.message ? String(err.message) : '';
+        setText(els.authHint, rawMsg || 'Tải danh sách khách thất bại.');
+      }
     }
   }
 
@@ -252,13 +260,21 @@
       setText(els.authHint, '');
       renderTable('RSVP (rsvps)', lastRsvps);
     } catch (err) {
-      const rawMsg = err && err.message ? String(err.message) : '';
-      const code = err && err.code ? String(err.code) : '';
-      const isDenied = /permission[- ]denied/i.test(rawMsg) || /permission[- ]denied/i.test(code) || /insufficient permissions/i.test(rawMsg);
-      const msg = isDenied
-        ? 'Không đủ quyền (permission-denied). Hãy thêm UID của bạn vào firestore.rules (isAdmin) rồi Publish/Deploy rules.'
-        : (rawMsg || 'Tải danh sách RSVP thất bại.');
-      setText(els.authHint, msg);
+      if (isPermissionDeniedError(err)) {
+        const ctx = getDebugAuthContext();
+        const parts = [
+          'Không đủ quyền (permission-denied).',
+          ctx.uid ? `UID hiện tại: ${ctx.uid}` : '',
+          ctx.projectId ? `projectId: ${ctx.projectId}` : '',
+          'Hãy thêm UID vào `firestore.rules` (hàm isAdmin) và deploy rules:',
+          'firebase login',
+          'firebase deploy --only firestore:rules',
+        ].filter(Boolean);
+        setText(els.authHint, parts.join(' '));
+      } else {
+        const rawMsg = err && err.message ? String(err.message) : '';
+        setText(els.authHint, rawMsg || 'Tải danh sách RSVP thất bại.');
+      }
     }
   }
 
