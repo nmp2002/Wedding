@@ -1,6 +1,16 @@
 (function () {
   'use strict';
 
+  function safeSetStatus(msg) {
+    try {
+      if (window.__setAdminStatus) return window.__setAdminStatus(msg);
+      const el = document.getElementById('adminStatus');
+      if (el) el.textContent = String(msg || '');
+    } catch (_) {
+      // ignore
+    }
+  }
+
   if (document && document.body) {
     document.body.classList.add('isLoaded');
   } else {
@@ -336,8 +346,14 @@
   }
 
   function init() {
-    initAuth();
-    initActions();
+    try {
+      initAuth();
+      initActions();
+    } catch (err) {
+      const msg = err && err.message ? String(err.message) : 'Có lỗi khi khởi tạo admin.';
+      safeSetStatus('Lỗi: ' + msg);
+      setLoggedIn(false);
+    }
   }
 
   init();
