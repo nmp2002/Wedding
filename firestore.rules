@@ -7,9 +7,14 @@ service cloud.firestore {
     // Replace the UIDs below with your real admin UID(s) from Firebase Auth.
     // If you leave this list empty, nobody will be able to access admin data.
     function isAdmin() {
-      return isSignedIn() && request.auth.uid in [
-        // "REPLACE_WITH_ADMIN_UID"
-      ];
+      return isSignedIn() && (
+        // Option A: hard-code admin UIDs
+        request.auth.uid in [
+          // "REPLACE_WITH_ADMIN_UID"
+        ]
+        // Option B: store an admin marker doc at /admins/{uid}
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
     }
 
     function isShortText(v, maxLen) {
@@ -22,6 +27,11 @@ service cloud.firestore {
 
     // Admin-only: manage guest list
     match /guests/{token} {
+      allow read, write: if isAdmin();
+    }
+
+    // Admin-only: admin marker documents
+    match /admins/{uid} {
       allow read, write: if isAdmin();
     }
 

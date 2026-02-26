@@ -165,6 +165,32 @@
     return u.toString();
   }
 
+  function isPermissionDeniedError(err) {
+    const rawMsg = err && err.message ? String(err.message) : '';
+    const code = err && err.code ? String(err.code) : '';
+    return (
+      /permission[- ]denied/i.test(rawMsg) ||
+      /permission[- ]denied/i.test(code) ||
+      /insufficient permissions/i.test(rawMsg) ||
+      /missing or insufficient permissions/i.test(rawMsg)
+    );
+  }
+
+  function getDebugAuthContext() {
+    try {
+      const auth = getAuth();
+      const u = auth && auth.currentUser ? auth.currentUser : null;
+      const uid = u && u.uid ? String(u.uid) : '';
+      const email = u && u.email ? String(u.email) : '';
+      const projectId = (window.__FIREBASE_CONFIG__ && window.__FIREBASE_CONFIG__.projectId)
+        ? String(window.__FIREBASE_CONFIG__.projectId)
+        : '';
+      return { uid, email, projectId };
+    } catch (_) {
+      return { uid: '', email: '', projectId: '' };
+    }
+  }
+
   async function loadGuests() {
     if (!canUseDb()) {
       setText(els.authHint, 'Chưa cấu hình Firebase (firebase-config.js).');
@@ -348,8 +374,21 @@
             loadGuests();
           }
         } catch (err) {
-          const msg = err && err.message ? String(err.message) : 'Tạo link thất bại.';
-          setText(els.guestCreateHint, msg);
+          if (isPermissionDeniedError(err)) {
+            const ctx = getDebugAuthContext();
+            const parts = [
+              'Không đủ quyền (permission-denied).',
+              ctx.uid ? `UID hiện tại: ${ctx.uid}` : '',
+              ctx.projectId ? `projectId: ${ctx.projectId}` : '',
+              'Hãy thêm UID vào `firestore.rules` (hàm isAdmin) và deploy rules:',
+              'firebase login',
+              'firebase deploy --only firestore:rules',
+            ].filter(Boolean);
+            setText(els.guestCreateHint, parts.join(' '));
+          } else {
+            const msg = err && err.message ? String(err.message) : 'Tạo link thất bại.';
+            setText(els.guestCreateHint, msg);
+          }
         } finally {
           if (btn) btn.disabled = false;
         }
