@@ -190,7 +190,12 @@
       setText(els.authHint, '');
       renderTable('Khách mời (guests)', lastGuests);
     } catch (err) {
-      const msg = err && err.message ? String(err.message) : 'Tải danh sách khách thất bại.';
+      const rawMsg = err && err.message ? String(err.message) : '';
+      const code = err && err.code ? String(err.code) : '';
+      const isDenied = /permission[- ]denied/i.test(rawMsg) || /permission[- ]denied/i.test(code) || /insufficient permissions/i.test(rawMsg);
+      const msg = isDenied
+        ? 'Không đủ quyền (permission-denied). Hãy thêm UID của bạn vào firestore.rules (isAdmin) rồi Publish/Deploy rules.'
+        : (rawMsg || 'Tải danh sách khách thất bại.');
       setText(els.authHint, msg);
     }
   }
@@ -221,7 +226,12 @@
       setText(els.authHint, '');
       renderTable('RSVP (rsvps)', lastRsvps);
     } catch (err) {
-      const msg = err && err.message ? String(err.message) : 'Tải danh sách RSVP thất bại.';
+      const rawMsg = err && err.message ? String(err.message) : '';
+      const code = err && err.code ? String(err.code) : '';
+      const isDenied = /permission[- ]denied/i.test(rawMsg) || /permission[- ]denied/i.test(code) || /insufficient permissions/i.test(rawMsg);
+      const msg = isDenied
+        ? 'Không đủ quyền (permission-denied). Hãy thêm UID của bạn vào firestore.rules (isAdmin) rồi Publish/Deploy rules.'
+        : (rawMsg || 'Tải danh sách RSVP thất bại.');
       setText(els.authHint, msg);
     }
   }
@@ -248,7 +258,9 @@
     auth.onAuthStateChanged((user) => {
       if (user) {
         setLoggedIn(true);
-        setText(els.status, `Đã đăng nhập: ${user.email || 'admin'}`);
+        const email = user.email || 'admin';
+        const uid = user.uid ? String(user.uid) : '';
+        setText(els.status, uid ? `Đã đăng nhập: ${email} (UID: ${uid})` : `Đã đăng nhập: ${email}`);
         setText(els.authHint, '');
       } else {
         setLoggedIn(false);
