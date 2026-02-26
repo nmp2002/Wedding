@@ -10,7 +10,7 @@ service cloud.firestore {
       return isSignedIn() && (
         // Option A: hard-code admin UIDs
         request.auth.uid in [
-          // "REPLACE_WITH_ADMIN_UID"
+          "F0Mros8BZWZxEXFDWaeLI92PpGi2"
         ]
         // Option B: store an admin marker doc at /admins/{uid}
         || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
