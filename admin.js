@@ -1,6 +1,14 @@
 (function () {
   'use strict';
 
+  if (document && document.body) {
+    document.body.classList.add('isLoaded');
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.body) document.body.classList.add('isLoaded');
+    }, { once: true });
+  }
+
   function byId(id) {
     return document.getElementById(id);
   }
