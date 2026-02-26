@@ -322,6 +322,93 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
   line-height: 1.65;
 }
 
+/* Admin (simple in-theme table + layout) */
+.adminCard{ max-width: 980px; margin: 0 auto; }
+
+.adminNote{
+  text-align: center;
+  color: var(--muted);
+  margin: 8px 0 12px 0;
+}
+
+.adminActions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 10px 0 16px 0;
+}
+
+.adminSplit{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  width: min(980px, 100%);
+  margin: 0 auto;
+}
+
+@media (min-width: 900px){
+  .adminSplit{ grid-template-columns: 0.95fr 1.05fr; }
+}
+
+.adminBlock{
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.78);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.adminBlockTitle{
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.adminMeta{
+  text-align: center;
+  color: var(--muted);
+  margin: 6px 0 10px 0;
+}
+
+.adminCopyRow{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.adminTableWrap{
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.70);
+}
+
+.adminTable{
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+.adminTh, .adminTd{
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+  font-size: 14px;
+}
+
+.adminTh{
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,.92);
+  font-weight: 900;
+}
+
 .heroNames{
   margin-top: 0;
   font-size: clamp(28px, 6.2vw, 46px);

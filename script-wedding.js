@@ -164,6 +164,8 @@
         groomName: byId('groomName'),
         weddingDateText: byId('weddingDateText'),
 
+        guestName: byId('guestName'),
+
         countdownTargetText: byId('countdownTargetText'),
 
         calTitle: byId('calTitle'),
@@ -197,11 +199,26 @@
 
         rsvpForm: byId('rsvpForm'),
         rsvpName: byId('rsvpName'),
+        rsvpPhone: byId('rsvpPhone'),
+        rsvpSide: byId('rsvpSide'),
+        // Optional segmented buttons (some templates)
         rsvpYes: byId('rsvpYes'),
         rsvpNo: byId('rsvpNo'),
         rsvpAttend: byId('rsvpAttend'),
+        rsvpSubmit: byId('rsvpSubmit'),
         rsvpHint: byId('rsvpHint'),
       };
+
+      function initGuestFromUrl() {
+        const guest = readParam('guest', 'khach', 'ten', 'name');
+        if (guest) setText(els.guestName, guest);
+
+        // Prefill RSVP fields if present
+        if (guest && els.rsvpName && !String(els.rsvpName.value || '').trim()) els.rsvpName.value = guest;
+
+        const side = readParam('side', 'nha');
+        if (side && els.rsvpSide && !String(els.rsvpSide.value || '').trim()) els.rsvpSide.value = side;
+      }
 
       function isLikelyPlaceholder(text) {
         const s = String(text || '').trim();
@@ -464,39 +481,91 @@
       }
 
       function initRSVP() {
-        if (!els.rsvpForm || !els.rsvpAttend || !els.rsvpYes || !els.rsvpNo) return;
+        if (!els.rsvpForm || !els.rsvpAttend || !els.rsvpName) return;
 
+        const hasSegmented = !!(els.rsvpYes && els.rsvpNo);
         function setAttend(value) {
           els.rsvpAttend.value = value;
-          els.rsvpYes.classList.toggle('isActive', value === 'yes');
-          els.rsvpNo.classList.toggle('isActive', value === 'no');
+          if (hasSegmented) {
+            els.rsvpYes.classList.toggle('isActive', value === 'yes');
+            els.rsvpNo.classList.toggle('isActive', value === 'no');
+          }
           if (els.rsvpHint) setText(els.rsvpHint, '');
         }
 
-        els.rsvpYes.addEventListener('click', () => setAttend('yes'));
-        els.rsvpNo.addEventListener('click', () => setAttend('no'));
+        if (hasSegmented) {
+          els.rsvpYes.addEventListener('click', () => setAttend('yes'));
+          els.rsvpNo.addEventListener('click', () => setAttend('no'));
+        }
 
-        const prefillName = readParam('guest', 'khach', 'ten');
-        if (prefillName && els.rsvpName) els.rsvpName.value = prefillName;
+        function canUseDb() {
+          return !!(window.WeddingDB && typeof window.WeddingDB.saveRsvp === 'function' && window.WeddingDB.isReady && window.WeddingDB.isReady());
+        }
 
-        els.rsvpForm.addEventListener('submit', (e) => {
+        function getTokenFromUrl() {
+          return readParam('t', 'token', 'guest_token', 'guestToken');
+        }
+
+        if (els.rsvpHint) {
+          if (canUseDb()) {
+            const token = getTokenFromUrl();
+            if (token) setText(els.rsvpHint, 'Xác nhận của bạn sẽ được lưu tự động.');
+            else setText(els.rsvpHint, 'Thiếu mã khách (token). Vui lòng dùng link được gửi riêng.');
+          }
+        }
+
+        els.rsvpForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const name = (els.rsvpName && els.rsvpName.value || '').trim();
+          const phone = (els.rsvpPhone && els.rsvpPhone.value || '').trim();
+          const side = (els.rsvpSide && els.rsvpSide.value || '').trim() || readParam('side', 'nha');
           const attend = (els.rsvpAttend.value || '').trim();
 
           if (!name) {
-            if (els.rsvpHint) setText(els.rsvpHint, 'Please enter your name.');
+            if (els.rsvpHint) setText(els.rsvpHint, 'Vui lòng nhập họ tên của bạn.');
             return;
           }
           if (!attend) {
-            if (els.rsvpHint) setText(els.rsvpHint, 'Please select Yes or No.');
+            if (els.rsvpHint) setText(els.rsvpHint, 'Vui lòng chọn bạn có tham dự không.');
             return;
           }
 
-          const message = attend === 'yes'
-            ? `Thank you, ${name}. See you at the wedding!`
-            : `Thank you, ${name}. We will miss you.`;
-          if (els.rsvpHint) setText(els.rsvpHint, message);
+          const submitBtn = els.rsvpSubmit;
+          if (submitBtn) submitBtn.disabled = true;
+
+          try {
+            if (canUseDb()) {
+              const token = getTokenFromUrl();
+              if (!token) {
+                if (els.rsvpHint) setText(els.rsvpHint, 'Thiếu mã khách (token). Vui lòng dùng link được gửi riêng.');
+                return;
+              }
+
+              if (els.rsvpHint) setText(els.rsvpHint, 'Đang gửi xác nhận…');
+              await window.WeddingDB.saveRsvp({
+                token,
+                name,
+                phone,
+                side,
+                attend,
+                page: location.pathname,
+                ua: (navigator && navigator.userAgent) ? navigator.userAgent : '',
+              });
+
+              const message = attend === 'yes'
+                ? `Cảm ơn ${name}! Hẹn gặp bạn tại buổi tiệc.`
+                : `Cảm ơn ${name}! Hẹn dịp khác nhé.`;
+              if (els.rsvpHint) setText(els.rsvpHint, message);
+              return;
+            }
+
+            const message = attend === 'yes'
+              ? `Cảm ơn ${name}! (Trang này chưa cấu hình DB để lưu RSVP.)`
+              : `Cảm ơn ${name}! (Trang này chưa cấu hình DB để lưu RSVP.)`;
+            if (els.rsvpHint) setText(els.rsvpHint, message);
+          } finally {
+            if (submitBtn) submitBtn.disabled = false;
+          }
         });
       }
 
@@ -886,6 +955,7 @@
       }
 
       function init() {
+        initGuestFromUrl();
         initNames();
         initCalendarAndCountdown();
         initHeroBannerSlideshow();

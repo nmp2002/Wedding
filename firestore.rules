@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+
+    // IMPORTANT:
+    // Replace the UIDs below with your real admin UID(s) from Firebase Auth.
+    // If you leave this list empty, nobody will be able to access admin data.
+    function isAdmin() {
+      return isSignedIn() && request.auth.uid in [
+        // "REPLACE_WITH_ADMIN_UID"
+      ];
+    }
+
+    function isShortText(v, maxLen) {
+      return v is string && v.size() <= maxLen;
+    }
+
+    function validAttend(v) {
+      return v is string && (v == 'yes' || v == 'no');
+    }
+
+    // Admin-only: manage guest list
+    match /guests/{token} {
+      allow read, write: if isAdmin();
+    }
+
+    // Public: allow a guest to create/update RSVP only if the guest token exists.
+    // Admin can read all RSVPs.
+    match /rsvps/{token} {
+      allow read: if isAdmin();
+
+      allow create, update: if
+        // token must already exist in guests
+        exists(/databases/$(database)/documents/guests/$(token)) &&
+        // keep token consistent
+        request.resource.data.token == token &&
+        // validate fields
+        (!('name' in request.resource.data) || isShortText(request.resource.data.name, 120)) &&
+        (!('phone' in request.resource.data) || isShortText(request.resource.data.phone, 40)) &&
+        (!('side' in request.resource.data) || (request.resource.data.side in ['','nhatrai','nhagai'])) &&
+        ('attend' in request.resource.data && validAttend(request.resource.data.attend));
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Thiệp Mời Cưới Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Great+Vibes&family=Sacramento&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=light-20260226admin1" />
+  <script>
+    document.documentElement.classList.add('js');
+  </script>
+</head>
+<body data-side="admin">
+  <main class="page" aria-label="Trang quản trị">
+    <div class="topNav" aria-label="Thanh điều hướng">
+      <div class="topNavInner topNavInnerMenu">
+        <a class="topNavLogo" href="./" aria-label="Về trang thiệp">
+          <span class="logoMark" aria-hidden="true">HH</span>
+        </a>
+        <div class="topNavTitle">Admin</div>
+      </div>
+    </div>
+
+    <div class="paper" aria-label="Nền thiệp">
+      <section class="section adminCard" aria-label="Đăng nhập">
+        <h2 class="sectionTitle">TRANG QUẢN TRỊ</h2>
+        <div class="adminNote" id="adminStatus">Đang kiểm tra cấu hình…</div>
+
+        <form class="rsvp adminLogin" id="adminLoginForm" autocomplete="on">
+          <div class="rsvpGrid">
+            <label class="rsvpField">
+              <div class="rsvpLabel">Email admin</div>
+              <input class="rsvpInput" id="adminEmail" type="email" autocomplete="email" />
+            </label>
+            <label class="rsvpField">
+              <div class="rsvpLabel">Mật khẩu</div>
+              <input class="rsvpInput" id="adminPass" type="password" autocomplete="current-password" />
+            </label>
+          </div>
+          <div class="rsvpActions">
+            <button class="btnPrimary" type="submit" id="adminLoginBtn">Đăng nhập</button>
+            <button class="btnSecondary" type="button" id="adminLogoutBtn" hidden>Đăng xuất</button>
+          </div>
+          <div class="rsvpHint" id="adminAuthHint"></div>
+        </form>
+      </section>
+
+      <section class="section adminCard" id="adminPanel" hidden aria-label="Quản trị">
+        <h2 class="sectionTitle">DANH SÁCH & XUẤT EXCEL</h2>
+
+        <div class="adminActions">
+          <button class="btnPrimary" type="button" id="btnLoadGuests">Xem danh sách khách</button>
+          <button class="btnPrimary" type="button" id="btnLoadRsvps">Xem danh sách RSVP</button>
+          <button class="btnSecondary" type="button" id="btnExportGuests">Xuất Excel (Khách)</button>
+          <button class="btnSecondary" type="button" id="btnExportRsvps">Xuất Excel (RSVP)</button>
+        </div>
+
+        <div class="adminSplit">
+          <div class="adminBlock" aria-label="Tạo link khách mời">
+            <div class="adminBlockTitle">Tạo link khách mời</div>
+            <form class="rsvp" id="guestCreateForm">
+              <div class="rsvpGrid">
+                <label class="rsvpField">
+                  <div class="rsvpLabel">Tên khách</div>
+                  <input class="rsvpInput" id="guestCreateName" type="text" />
+                </label>
+                <label class="rsvpField">
+                  <div class="rsvpLabel">Số điện thoại (tuỳ chọn)</div>
+                  <input class="rsvpInput" id="guestCreatePhone" type="tel" />
+                </label>
+                <label class="rsvpField">
+                  <div class="rsvpLabel">Khách của ai?</div>
+                  <select class="rsvpInput" id="guestCreateSide">
+                    <option value="">(Không chọn)</option>
+                    <option value="nhatrai">Nhà trai</option>
+                    <option value="nhagai">Nhà gái</option>
+                  </select>
+                </label>
+              </div>
+              <div class="rsvpActions">
+                <button class="btnPrimary" type="submit" id="guestCreateBtn">Tạo link</button>
+              </div>
+              <div class="rsvpHint" id="guestCreateHint"></div>
+              <div class="adminCopyRow" id="guestLinkRow" hidden>
+                <input class="rsvpInput" id="guestLinkOut" type="text" readonly />
+                <button class="btnSecondary" type="button" id="btnCopyGuestLink">Copy</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="adminBlock" aria-label="Bảng dữ liệu">
+            <div class="adminBlockTitle" id="tableTitle">Dữ liệu</div>
+            <div class="adminMeta" id="tableMeta"></div>
+            <div class="adminTableWrap">
+              <table class="adminTable" id="adminTable" aria-label="Bảng dữ liệu">
+                <thead id="adminThead"></thead>
+                <tbody id="adminTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="pageFooter" aria-label="Ghi chú">
+        <div class="footerThanks">Tip: Hãy cấu hình Firestore Rules để chỉ admin xem dữ liệu.</div>
+        <div class="footerBrand">WEDDING ADMIN</div>
+      </footer>
+    </div>
+  </main>
+
+  <script src="firebase-config.js?v=light-20260226admin1"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-wedding-db.js?v=light-20260226admin1"></script>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="admin.js?v=light-20260226admin1"></script>
+</body>
+</html>

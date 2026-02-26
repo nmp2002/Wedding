@@ -7,6 +7,9 @@ npm-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Firebase local config override (optional)
+firebase-config.local.js
+
 # Node (if any in root)
 node_modules/
 
