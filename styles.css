@@ -335,7 +335,7 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
+  justify-content: flex-start;
   margin: 10px 0 16px 0;
 }
 
@@ -347,8 +347,8 @@ body.isMenuOpen .menuItem:nth-child(7){ transition-delay: 130ms; }
   margin: 0 auto;
 }
 
-@media (min-width: 900px){
-  .adminSplit{ grid-template-columns: 0.95fr 1.05fr; }
+body.isAdminLoggedIn .adminLoginFields{
+  display: none;
 }
 
 .adminBlock{

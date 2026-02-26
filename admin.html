@@ -29,15 +29,17 @@
         <div class="adminNote" id="adminStatus">Đang kiểm tra cấu hình…</div>
 
         <form class="rsvp adminLogin" id="adminLoginForm" autocomplete="on">
-          <div class="rsvpGrid">
-            <label class="rsvpField">
-              <div class="rsvpLabel">Email admin</div>
-              <input class="rsvpInput" id="adminEmail" type="email" autocomplete="email" />
-            </label>
-            <label class="rsvpField">
-              <div class="rsvpLabel">Mật khẩu</div>
-              <input class="rsvpInput" id="adminPass" type="password" autocomplete="current-password" />
-            </label>
+          <div class="adminLoginFields">
+            <div class="rsvpGrid">
+              <label class="rsvpField">
+                <div class="rsvpLabel">Email admin</div>
+                <input class="rsvpInput" id="adminEmail" type="email" autocomplete="email" />
+              </label>
+              <label class="rsvpField">
+                <div class="rsvpLabel">Mật khẩu</div>
+                <input class="rsvpInput" id="adminPass" type="password" autocomplete="current-password" />
+              </label>
+            </div>
           </div>
           <div class="rsvpActions">
             <button class="btnPrimary" type="submit" id="adminLoginBtn">Đăng nhập</button>
@@ -49,13 +51,6 @@
 
       <section class="section adminCard" id="adminPanel" hidden aria-label="Quản trị">
         <h2 class="sectionTitle">DANH SÁCH & XUẤT EXCEL</h2>
-
-        <div class="adminActions">
-          <button class="btnPrimary" type="button" id="btnLoadGuests">Xem danh sách khách</button>
-          <button class="btnPrimary" type="button" id="btnLoadRsvps">Xem danh sách RSVP</button>
-          <button class="btnSecondary" type="button" id="btnExportGuests">Xuất Excel (Khách)</button>
-          <button class="btnSecondary" type="button" id="btnExportRsvps">Xuất Excel (RSVP)</button>
-        </div>
 
         <div class="adminSplit">
           <div class="adminBlock" aria-label="Tạo link khách mời">
@@ -92,6 +87,14 @@
 
           <div class="adminBlock" aria-label="Bảng dữ liệu">
             <div class="adminBlockTitle" id="tableTitle">Dữ liệu</div>
+
+            <div class="adminActions" aria-label="Hành động dữ liệu">
+              <button class="btnPrimary" type="button" id="btnLoadGuests">Xem danh sách khách</button>
+              <button class="btnPrimary" type="button" id="btnLoadRsvps">Xem danh sách RSVP</button>
+              <button class="btnSecondary" type="button" id="btnExportGuests">Xuất Excel (Khách)</button>
+              <button class="btnSecondary" type="button" id="btnExportRsvps">Xuất Excel (RSVP)</button>
+            </div>
+
             <div class="adminMeta" id="tableMeta"></div>
             <div class="adminTableWrap">
               <table class="adminTable" id="adminTable" aria-label="Bảng dữ liệu">

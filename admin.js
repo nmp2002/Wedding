@@ -85,6 +85,11 @@
   }
 
   function setLoggedIn(isLoggedIn) {
+    try {
+      if (document && document.body) document.body.classList.toggle('isAdminLoggedIn', !!isLoggedIn);
+    } catch (_) {
+      // ignore
+    }
     if (els.panel) els.panel.hidden = !isLoggedIn;
     if (els.logoutBtn) els.logoutBtn.hidden = !isLoggedIn;
     if (els.loginBtn) els.loginBtn.hidden = isLoggedIn;
