@@ -704,6 +704,180 @@
         document.body.appendChild(layer);
       }
 
+      function initIntroOverlay() {
+        const overlay = byId('introOverlay');
+        if (!overlay) return;
+
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) {
+          overlay.hidden = true;
+          return;
+        }
+
+        const root = document.body;
+        if (!root) {
+          overlay.hidden = true;
+          return;
+        }
+
+        const openBtn = byId('introOpenBtn');
+        const hint = byId('introHint');
+        const commentsHost = byId('introComments');
+
+        // Sync names from the real invite (supports URL params / dynamic name updates)
+        const introGroom = byId('introGroomName');
+        const introBride = byId('introBrideName');
+        const realGroom = byId('groomName');
+        const realBride = byId('brideName');
+        if (introGroom && realGroom && (realGroom.textContent || '').trim()) introGroom.textContent = (realGroom.textContent || '').trim();
+        if (introBride && realBride && (realBride.textContent || '').trim()) introBride.textContent = (realBride.textContent || '').trim();
+
+        // Sync the card image from the main invite photo if available
+        const introCardImg = byId('introCardImg');
+        const invitePhoto = byId('invitePhoto');
+        if (introCardImg && invitePhoto && invitePhoto.getAttribute('src')) {
+          introCardImg.setAttribute('src', invitePhoto.getAttribute('src'));
+        }
+
+        // Make visible then fade in via CSS.
+        overlay.hidden = false;
+
+        let finished = false;
+        let openTimer = 0;
+        let fadeTimer = 0;
+        const commentCleanupTimers = [];
+        let commentLoopTimer = 0;
+        let commentIndex = 0;
+
+        function finish() {
+          if (finished) return;
+          finished = true;
+
+          root.classList.add('isIntroDone');
+
+          // Allow fade-out transition then fully hide.
+          fadeTimer = window.setTimeout(() => {
+            // Keep comments running on the main page (move out of overlay before hiding)
+            if (commentsHost && commentsHost.parentElement === overlay) {
+              document.body.appendChild(commentsHost);
+            }
+            if (commentsHost) commentsHost.classList.add('isFloating');
+
+            overlay.hidden = true;
+            root.classList.remove('isIntroDone');
+            root.classList.remove('isIntroActive');
+            root.classList.remove('isIntroOpening');
+          }, 320);
+
+          for (const t of commentCleanupTimers) clearTimeout(t);
+        }
+
+        function pushFakeComment(name, message, index) {
+          if (!commentsHost) return;
+          const el = document.createElement('div');
+          el.className = 'introComment';
+          el.style.setProperty('--y', `${-(index * 56)}px`);
+          el.innerHTML = `<strong>${escapeHtml(name)}:</strong> ${escapeHtml(message)}`;
+          commentsHost.appendChild(el);
+
+          // Cap nodes to avoid buildup
+          while (commentsHost.children.length > 6) {
+            commentsHost.removeChild(commentsHost.firstElementChild);
+          }
+
+          const t = window.setTimeout(() => {
+            el.remove();
+          }, 3400);
+          commentCleanupTimers.push(t);
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function startFakeComments() {
+          if (!commentsHost) return;
+          commentsHost.innerHTML = '';
+
+          const items = [
+            ['Chanh', 'Chúc mừng hạnh phúc trăm năm!'],
+            ['Chíp', 'Chúc hai bạn trăm năm hạnh phúc!'],
+            ['Linh', '✨ Đồng tâm đồng lòng, xây đắp tổ ấm thịnh vượng!'],
+            ['Hà', 'Chúc mừng hạnh phúc!'],
+            ['Huy', 'Chúc mừng ngày vui của hai bạn!'],
+          ];
+
+          items.forEach((it, i) => {
+            const delay = 220 + i * 420;
+            const t = window.setTimeout(() => pushFakeComment(it[0], it[1], i), delay);
+            commentCleanupTimers.push(t);
+          });
+
+          if (!commentLoopTimer) {
+            const loopItems = [
+              ['Vy', 'Mãi hạnh phúc nhé 💞'],
+              ['Minh', 'Trăm năm hạnh phúc!'],
+              ['Ngọc', 'Chúc mừng ngày trọng đại!'],
+              ['An', 'Đẹp đôi quá trời!'],
+              ['Phương', 'Hạnh phúc viên mãn nha ✨'],
+              ['Khanh', 'Sớm có tin vui nha 😄'],
+            ];
+
+            commentLoopTimer = window.setInterval(() => {
+              const pick = loopItems[Math.floor(Math.random() * loopItems.length)];
+              commentIndex = (commentIndex + 1) % 5;
+              pushFakeComment(pick[0], pick[1], commentIndex);
+            }, 1100);
+          }
+        }
+
+        function open() {
+          if (finished) return;
+          if (root.classList.contains('isIntroOpening')) return;
+
+          root.classList.add('isIntroOpening');
+          if (openBtn) openBtn.disabled = true;
+          if (hint) hint.textContent = 'Đang mở thiệp…';
+
+          startFakeComments();
+
+          // Let the flap animation play, then fade away.
+          openTimer = window.setTimeout(finish, 2600);
+        }
+
+        // Start on next frame to ensure transitions apply.
+        requestAnimationFrame(() => {
+          root.classList.add('isIntroActive');
+          if (openBtn && typeof openBtn.focus === 'function') {
+            openBtn.focus({ preventScroll: true });
+          }
+        });
+
+        // Primary interaction: tap the envelope.
+        if (openBtn) {
+          openBtn.addEventListener('click', open);
+        } else {
+          // Fallback: if the button is missing, clicking the overlay opens.
+          overlay.addEventListener('click', open);
+        }
+
+        // Escape key skips intro.
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') finish();
+        });
+
+        window.addEventListener('beforeunload', () => {
+          if (openTimer) clearTimeout(openTimer);
+          if (fadeTimer) clearTimeout(fadeTimer);
+          if (commentLoopTimer) clearInterval(commentLoopTimer);
+        }, { once: true });
+      }
+
       function initScrollReveal() {
         const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (prefersReduced) return;
@@ -955,6 +1129,7 @@
       }
 
       function init() {
+        initIntroOverlay();
         initGuestFromUrl();
         initNames();
         initCalendarAndCountdown();

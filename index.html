@@ -13,6 +13,35 @@
   </script>
 </head>
 <body data-side="root">
+  <div class="introOverlay" id="introOverlay" role="dialog" aria-modal="true" aria-label="Mở thiệp" hidden>
+    <div class="introStage">
+      <div class="introKicker" aria-hidden="true">W E D D I N G&nbsp;&nbsp;I N V I T A T I O N</div>
+      <div class="introTitle">THIỆP MỜI CƯỚI</div>
+      <div class="introCouple" aria-label="Tên cô dâu chú rể">
+        <span class="introCoupleName" id="introGroomName">Tuấn Trần</span>
+        <span class="introCoupleAmp" aria-hidden="true">&amp;</span>
+        <span class="introCoupleName" id="introBrideName">Diệu Lan</span>
+      </div>
+
+      <button class="introEnvelopeBtn" id="introOpenBtn" type="button" aria-describedby="introHint" aria-label="Mở thiệp mời">
+        <span class="introEnvelopeArt" aria-hidden="true">
+          <!-- Card/photo removed as per user request -->
+          <span class="introEnvPocket" aria-hidden="true"></span>
+          <span class="introEnvBottom" aria-hidden="true"></span>
+          <span class="introEnvMouth" aria-hidden="true"></span>
+          <span class="introEnvFlap" aria-hidden="true"></span>
+          <span class="introEnvSeal" aria-hidden="true">
+            <span class="introSealHalf introSealLeft" aria-hidden="true"></span>
+            <span class="introSealHalf introSealRight" aria-hidden="true"></span>
+          </span>
+        </span>
+      </button>
+
+      <div class="introHint" id="introHint">Chạm để mở thiệp</div>
+    </div>
+
+    <div class="introComments" id="introComments" aria-live="polite" aria-relevant="additions" aria-atomic="false"></div>
+  </div>
   <main class="page" aria-label="Thiệp mời cưới">
     <div class="topNav" aria-label="Thanh điều hướng">
       <div class="topNavInner topNavInnerMenu">
