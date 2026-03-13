@@ -69,13 +69,11 @@
       background-color:transparent;
     }
 
-    /* Top-left bloom: anchored to the envelope frame, overlaps the top-left corner */
+    /* Top-left bloom: position at the frame corner, JS will nudge by translate() */
     .flower-top-left{
-      /* scaled up 3x and nudged to sit over the envelope corner */
-      left: -88%;
-      top: -8%;
-      width: 920px; /* 340px × 3 */
-      transform: rotate(-10deg) scale(1);
+      left: 0;
+      top: 0;
+      width: clamp(400px, 28vw, 700px); /* doubled min so it stays much larger on small screens */
       transform-origin: left top;
       mix-blend-mode: normal; /* ensure color looks natural on top */
       z-index:80; /* keep it clearly above envelope and flap */
@@ -84,11 +82,10 @@
 
     /* Bottom-right bloom: anchored to the envelope frame, overlaps lower-right */
     .flower-bottom-right{
-      /* scaled up 3x and nudged down to tuck under corner */
-      right: -60%;
-      bottom: -92%;
-      width: 880px; /* 260px × 3 */
-      transform: rotate(14deg);
+      /* Bottom-right anchored; JS will nudge via translate() so it scales with image */
+      right: 0;
+      bottom: 0;
+      width: clamp(360px, 24vw, 560px); /* doubled min so it stays much larger on small screens */
       transform-origin: right bottom;
       mix-blend-mode: normal;
       z-index:65;
@@ -96,8 +93,10 @@
     }
 
     @media (max-width:680px){
-      .flower-top-left{ left: -10px; top: -28px; width:220px; transform: rotate(-12deg); }
-      .flower-bottom-right{ right: -18px; bottom: -24px; width:200px; transform: rotate(10deg); }
+      /* small adjustments: raise slightly and nudge left a bit */
+      .flower-top-left{ left: -12px; top: 12px; width:520px; transform: rotate(-12deg); }
+      /* raised a bit and nudged slightly left */
+      .flower-bottom-right{ right: -8px; bottom: -48px; width:440px; transform: rotate(10deg); }
     }
 
     .envelope{
@@ -913,6 +912,57 @@
           }catch(e){}
         });
       });
+    })();
+    /* JS positioning for flower overlays: compute translate based on image size
+       so offsets scale correctly across viewports. Runs on load + resize. */
+    (function positionFlowerOverlays(){
+      var frame = document.querySelector('.envelopeFrame');
+      var topImg = document.querySelector('.flower-top-left');
+      var botImg = document.querySelector('.flower-bottom-right');
+      if(!frame || (!topImg && !botImg)) return;
+
+      function applyPositions(){
+        // ensure CSS width applied before measuring
+        if(topImg){
+          var w = topImg.offsetWidth || topImg.naturalWidth || 0;
+          var h = topImg.offsetHeight || topImg.naturalHeight || 0;
+          topImg.style.left = '0px';
+          topImg.style.top = '0px';
+          var isSmall = window.matchMedia && window.matchMedia('(max-width:680px)').matches;
+          var topXMult = isSmall ? 0.46 : 0.44; // slightly more left on small
+          var topYMult = isSmall ? 0.02 : 0.16; // keep small upward translate minimal so bloom sits slightly higher
+          topImg.style.transform = 'translate(' + Math.round(-w * topXMult) + 'px,' + Math.round(-h * topYMult) + 'px) rotate(-10deg)';
+          topImg.style.transformOrigin = 'left top';
+        }
+        if(botImg){
+          var w2 = botImg.offsetWidth || botImg.naturalWidth || 0;
+          var h2 = botImg.offsetHeight || botImg.naturalHeight || 0;
+          botImg.style.right = '0px';
+          botImg.style.bottom = '0px';
+          var isSmall = window.matchMedia && window.matchMedia('(max-width:680px)').matches;
+          var botXMult = isSmall ? 0.36 : 0.36; // nudge slightly left on small screens
+          var botYMult = isSmall ? 0.80 : 0.72; // lower multiplier on small to raise the image
+          botImg.style.transform = 'translate(' + Math.round(w2 * botXMult) + 'px,' + Math.round(h2 * botYMult) + 'px) rotate(14deg)';
+          botImg.style.transformOrigin = 'right bottom';
+        }
+      }
+
+      var tHandle = null;
+      function onResize(){
+        clearTimeout(tHandle);
+        tHandle = setTimeout(applyPositions, 60);
+      }
+
+      // hook image load (in case sizes change)
+      document.querySelectorAll('.flower-overlay').forEach(function(img){
+        if(!img.complete) img.addEventListener('load', applyPositions);
+      });
+
+      window.addEventListener('resize', onResize);
+      window.addEventListener('orientationchange', onResize);
+      window.addEventListener('load', applyPositions);
+      // initial call in case DOM already loaded
+      applyPositions();
     })();
   </script>
   <script>
