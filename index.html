@@ -3,363 +3,963 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thiệp Mời Cưới Online</title>
+  <title>Thiệp Mời Cưới</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Great+Vibes&family=Sacramento&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=light-20260227a" />
-  <script>
-    document.documentElement.classList.add('js');
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Cinzel:wght@500;700&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#e9e7e4;
+      --paper:#f8f6f2;
+      --seal-1:#f1c5bb;
+      --seal-2:#cb9188;
+      --olive:#6d7442;
+      /* invite card position/rotation tuning (desktop) */
+      --card-closed-ty: 42px;
+      --card-open-ty: -175px;
+      --card-active-ty: -230px;
+      --card-rotate: -6deg;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      background:var(--bg);
+      font-family:"Cormorant Garamond", serif;
+      color:#2f1e1d;
+    }
+
+    .scene{
+      width:min(980px, 98vw);
+      padding:24px 12px 26px;
+      text-align:center;
+    }
+
+    .envelopeBtn{
+      border:0;
+      background:transparent;
+      padding:0;
+      cursor:pointer;
+    }
+
+    .envelopeFrame{
+      width:min(520px, 80vw);
+      margin:0 auto;
+      padding:0;
+      background:transparent;
+      border:none;
+      border-radius:6px;
+      box-shadow:0 30px 60px rgba(0,0,0,.18);
+      position:relative;
+      z-index:3;
+    }
+
+    /* floral overlays (positioned around the envelope)
+       Adjusted so blooms sit visually above the envelope and are fixed to its frame. */
+    .flower-overlay{
+      position:absolute;
+      pointer-events:none;
+      z-index:60; /* high so flower sits above envelope and card */
+      user-select:none;
+      image-rendering: -webkit-optimize-contrast;
+      background-color:transparent;
+    }
+
+    /* Top-left bloom: anchored to the envelope frame, overlaps the top-left corner */
+    .flower-top-left{
+      /* scaled up 3x and nudged to sit over the envelope corner */
+      left: -88%;
+      top: -8%;
+      width: 920px; /* 340px × 3 */
+      transform: rotate(-10deg) scale(1);
+      transform-origin: left top;
+      mix-blend-mode: normal; /* ensure color looks natural on top */
+      z-index:80; /* keep it clearly above envelope and flap */
+      pointer-events:none;
+    }
+
+    /* Bottom-right bloom: anchored to the envelope frame, overlaps lower-right */
+    .flower-bottom-right{
+      /* scaled up 3x and nudged down to tuck under corner */
+      right: -60%;
+      bottom: -92%;
+      width: 880px; /* 260px × 3 */
+      transform: rotate(14deg);
+      transform-origin: right bottom;
+      mix-blend-mode: normal;
+      z-index:65;
+      pointer-events:none;
+    }
+
+    @media (max-width:680px){
+      .flower-top-left{ left: -10px; top: -28px; width:220px; transform: rotate(-12deg); }
+      .flower-bottom-right{ right: -18px; bottom: -24px; width:200px; transform: rotate(10deg); }
+    }
+
+    .envelope{
+      position:relative;
+      width:100%;
+      aspect-ratio:139 / 100;
+      border-radius:2px;
+      overflow:visible;
+      background:#7e302d;
+      perspective:1200px;
+    }
+
+    /* Canvas / linen texture — fine crosshatch */
+    .envelope::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.035) 0 1px, transparent 1px 3px);
+      pointer-events:none;
+      z-index:11;
+    }
+
+    .envelope::after{
+      display:none;
+    }
+
+    .backFlapShell{
+      display:none;
+    }
+
+    .backFlapPaper{
+      display:none;
+    }
+
+    .backFlapPaper::before{
+      display:none;
+    }
+
+    /* White inner lining of envelope — revealed when opened */
+    .envelopeLiner{
+      position:absolute;
+      left:5%;
+      right:5%;
+      top:3%;
+      bottom:3%;
+      background:linear-gradient(180deg, #fffefe 0%, #f4f2ef 60%, #edeae6 100%);
+      border-radius:4px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);
+      z-index:2;
+      opacity:0;
+      transition:opacity .42s ease;
+      pointer-events:none;
+    }
+
+    .envelopeLiner::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(120% 100% at 50% 10%, rgba(255,255,255,.4), transparent 50%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 1px, transparent 1px 5px);
+      pointer-events:none;
+    }
+
+    .inviteCard{
+      position:absolute;
+      left:50%;
+      top:75%;
+      width:62%;
+      height:62%;
+      transform:translate(-50%, var(--card-closed-ty)) rotate(var(--card-rotate));
+      background:#6d1d23 url('images/saveourdate.jpg') center / cover no-repeat;
+      border-radius:4px;
+      box-shadow:0 8px 18px rgba(22,10,12,.22);
+      opacity:0;
+      overflow:visible;
+      /* add a longer delay so the flap finishes opening first */
+      transition: transform 0.9s cubic-bezier(.2,.82,.2,1), opacity 0.45s 0.86s;
+      will-change: transform, opacity;
+      z-index:2;
+      pointer-events:none;
+    }
+
+    .envelope.is-open .inviteCard {
+      opacity: 1;
+      /* lift the card higher out of the envelope (match reference image) */
+      transform: translate(-50%, calc(var(--card-open-ty, 0%) - 20%)) scale(1.06) rotate(var(--card-rotate));
+      /* raise card above vinyl but below polaroids */
+      z-index: 26;
+      pointer-events: auto;
+      transition-delay: 0s;
+    }
+
+    .envelope.is-card-active .inviteCard {
+      z-index: 30;
+      /* when active, lift and scale a bit more for emphasis */
+      transform: translate(-50%, var(--card-active-ty)) scale(1.12) rotate(var(--card-rotate));
+      box-shadow: 0 24px 48px rgba(22,10,12,.32), 0 0 0 6px #fff8;
+      opacity: 1;
+      cursor: pointer;
+      transition: transform 0.5s cubic-bezier(.2,.82,.2,1), box-shadow 0.5s, z-index 0s;
+    }
+
+    .flapTop {
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      height:100%;
+      clip-path:url(#flapCurve);
+      border-radius:0;
+      background:linear-gradient(180deg, #7e302d 0%, #6e2a24 100%);
+      backface-visibility:hidden;
+      transition:transform 0.7s cubic-bezier(.2,.82,.2,1), z-index 0s 0.3s;
+    }
+
+    .envelope.is-open .flapTop {
+      transform: rotateX(-110deg);
+      z-index: 1;
+    }
+
+    .flapTopInner {
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      height:100%;
+      clip-path:url(#flapCurve);
+      border-radius:0;
+      background:linear-gradient(180deg, #fffefe 0%, #f4f2ef 60%, #edeae6 100%);
+      border-radius:4px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.6);
+      z-index:2;
+      opacity:0;
+      transition:opacity 0.3s;
+    }
+
+    .envelope.is-open .flapTopInner {
+      opacity: 1;
+    }
+
+    .inviteCard::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      /* subtle paper texture only */
+      background: repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, rgba(255,255,255,0) 1px 6px);
+      opacity:.06;
+      pointer-events:none;
+    }
+
+    /* Floral overlays removed per request */
+
+    .pocketBottom,
+    .flap{
+      position:absolute;
+      left:0;
+      right:0;
+    }
+
+    .pocketBottom{
+      bottom:0;
+      height:72%;
+      clip-path:url(#pocketBottomCurve);
+      background:
+        linear-gradient(0deg, #843632 0%, #7a2f2c 50%, #6e2a24 100%);
+    }
+
+    .pocketBottom::before{
+      display:none;
+    }
+
+    .pocketBottom::after{
+      display:none;
+    }
+
+    .foldLine,
+    .foldCenter{
+      position:absolute;
+      pointer-events:none;
+      z-index:4;
+    }
+
+    .foldLine{
+      height:2px;
+      background:rgba(0,0,0,.35);
+      transform-origin:left center;
+      opacity:0;
+    }
+
+    .foldTopLeft{
+      left:0;
+      top:0;
+      width:61.5%;
+      transform:rotate(35.5deg);
+    }
+
+    .foldTopRight{
+      right:0;
+      top:0;
+      width:61.5%;
+      transform:rotate(-35.5deg);
+      transform-origin:right center;
+    }
+
+    .foldBottomLeft{
+      left:0;
+      bottom:0;
+      width:62%;
+      transform:rotate(-35deg);
+      transform-origin:left bottom;
+    }
+
+    .foldBottomRight{
+      right:0;
+      bottom:0;
+      width:62%;
+      transform:rotate(35deg);
+      transform-origin:right bottom;
+    }
+
+    .foldCenter{
+      left:50%;
+      top:34%;
+      width:1px;
+      height:32%;
+      background:linear-gradient(180deg,
+        rgba(0,0,0,.03) 0%,
+        rgba(0,0,0,.14) 40%,
+        rgba(0,0,0,.14) 60%,
+        rgba(0,0,0,.03) 100%);
+      transform:translateX(-50%);
+      z-index:5;
+      box-shadow:1px 0 0 rgba(255,255,255,.04);
+    }
+
+    /* Bottom pocket wrapper: drop-shadow going UP, mirror of .flapWrap */
+    .pocketBottomWrap{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:72%;
+      z-index:4;
+      filter:drop-shadow(0 -6px 8px rgba(0,0,0,.22));
+    }
+
+    .flapWrap{
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      height:62%;
+      z-index:8;
+      transform-style:preserve-3d;
+      transform-origin:50% 0;
+      transition:transform .82s cubic-bezier(.16,.86,.24,1), opacity .24s linear .18s, z-index 0s 0s;
+      filter:drop-shadow(0 8px 10px rgba(0,0,0,.25));
+    }
+
+    /* rotate the flap open when `.is-open` is applied */
+    .envelope.is-open .flapWrap{
+      /* open flap higher (more folded back) to reveal more of the card */
+      transform: rotateX(-160deg);
+      /* move flap behind polaroids but above flowers' base */
+      z-index:14;
+    }
+
+    .flapEdge,
+    .flapOverlapShadow{
+      position:absolute;
+      pointer-events:none;
+    }
+
+    .flapEdge{
+      display:none;
+    }
+
+    .flapEdgeLeft{
+      left:7.2%;
+      top:28.8%;
+      width:42.4%;
+      transform:rotate(29.2deg);
+      transform-origin:left center;
+      background:linear-gradient(90deg, rgba(34,14,14,.30), rgba(34,14,14,.08));
+    }
+
+    .flapEdgeRight{
+      right:7.2%;
+      top:28.8%;
+      width:42.4%;
+      transform:rotate(-29.2deg);
+      transform-origin:right center;
+      background:linear-gradient(270deg, rgba(34,14,14,.30), rgba(34,14,14,.08));
+    }
+
+    .flapOverlapShadow{
+      display:none;
+    }
+
+    .flap{
+      top:0;
+      height:100%;
+      clip-path:url(#flapCurve);
+      border-radius:0;
+      background:linear-gradient(180deg, #7e302d 0%, #6e2a24 100%);
+      backface-visibility:hidden;
+    }
+
+    /* White liner inside flap — visible when flap opens (backface) */
+
+
+    .flap::after{
+      display:none;
+    }
+
+    .flap::before{
+      display:none;
+    }
+
+
+
+    .flapCornerShade{
+      display:none;
+    }
+
+    .seal{
+      position:absolute;
+      left:50%;
+      top:54%;
+      transform:translate(-50%, -50%);
+      /* remove decorative background so only the DP image shows */
+      width:auto;
+      height:auto;
+      padding:0;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      display:block;
+      z-index:9;
+      transition:transform .5s ease, opacity .3s ease, z-index 0s 0s;
+    }
+
+    .seal::before{ display:none }
+    .seal::after{ display:none }
+
+    .sealImg{
+      display:block;
+      width:auto; /* use intrinsic DP size */
+      height:auto;
+      max-width:960px; /* scaled up 10x per request */
+      object-fit:contain;
+      pointer-events:none;
+    }
+
+    .sealMark{
+      font-family:"Cinzel", serif;
+      font-size:22px;
+      font-weight:700;
+      color:rgba(90,48,44,.85);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      line-height:1;
+      gap:0px;
+      position:relative;
+    }
+
+    .sealMark .v-first{
+      position:relative;
+      z-index:2;
+    }
+
+    .sealMark .v-flip{
+      display:inline-block;
+      transform:scaleY(-1);
+      margin-top:-2px;
+      position:relative;
+      z-index:1;
+    }
+
+    .clickHint{
+      position:absolute;
+      left:50%;
+      bottom:38px;
+      transform:translateX(-50%);
+      font-size:20px;
+      font-style:italic;
+      line-height:1;
+      color:#f5ebe8;
+      text-decoration:underline;
+      text-underline-offset:3px;
+      text-shadow:0 2px 8px rgba(17,8,9,.42);
+      z-index:5;
+      transition:opacity .35s ease;
+    }
+
+
+
+    .envelope.is-open::after{
+      opacity:.14;
+    }
+
+    .envelope.is-open{
+      overflow:visible;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .scene.is-open .dateText{ opacity:0; transform:translateY(-10px); }
+
+    .dateText{
+      margin-top:40px;
+      font-family:"Great Vibes", cursive;
+      font-size:clamp(48px, 4vw, 58px);
+      font-style:normal;
+      line-height:1;
+      color:var(--olive);
+      text-shadow:0 1px 0 rgba(255,255,255,.3);
+      transition:opacity .32s ease, transform .32s ease;
+    }
+
+    @media (max-width:680px){
+      .envelopeFrame{width:min(520px, 92vw)}
+      .seal{width:56px;height:56px;top:51.9%}
+      .sealMark{font-size:29px}
+      .clickHint{bottom:14px}
+      .dateText{margin-top:20px}
+    }
+
+    /* Mobile-specific polish: more visible back flap protrude and card placement */
+    @media (max-width:480px){
+      .envelopeFrame{padding:0;border:none;width:94vw}
+      .envelope{aspect-ratio: 140 / 100}
+      .backFlapShell{display:none}
+      .backFlapPaper{display:none}
+      .flapWrap{transform-origin:50% 5px}
+      .flap{clip-path:url(#flapCurve);box-shadow:0 8px 14px rgba(20,10,10,.22)}
+
+      .pocketBottomWrap{bottom:0;height:72%}
+      .pocketBottom{height:100%;clip-path:url(#pocketBottomCurve)}
+
+      .seal{top:51.4%;width:50px;height:50px}
+      .sealMark{font-size:26px}
+      .inviteCard{width:74%;height:66%;transform:translate(-50%,42px) rotate(-7deg)}
+      .envelope.is-open .inviteCard{transform:translate(-55%,-88px) rotate(-9deg);box-shadow:0 20px 28px rgba(16,8,8,.32)}
+      .envelope.is-open .flapWrap{transform:translateY(-4px) rotateX(-162deg)}
+      .envelope.is-open .seal{transform:translate(-50%, -360%) scale(.88)}
+      .clickHint{font-size:clamp(12px,3.2vw,16px);bottom:10px}
+    }
+
+    /* Polaroid & vinyl reveal styles */
+    .polaroid{position:absolute;pointer-events:none;background:transparent;border-radius:6px;padding:0;box-shadow:none;opacity:0;transform-origin:center center;transition:transform .7s cubic-bezier(.2,.85,.2,1),opacity .45s;z-index:24;user-select:none;image-rendering:-webkit-optimize-contrast}
+     /* Polaroid styled to visually reference `.inviteCard` while preserving
+       transparency in the image. Hide the old pseudo-frame and apply the
+       invite-card shadow/border to the container so transparent PNG areas
+       reveal the card beneath. */
+     .polaroid::before{display:none}
+     .polaroid{
+      background:transparent;
+      border-radius:4px;
+      box-shadow:0 8px 18px rgba(22,10,12,.22);
+      border:1px solid rgba(0,0,0,.04);
+      padding:6px;
+     }
+    /* Ghi đè lại các style cũ */
+    .polaroid {
+      position: absolute;
+      width: auto; /* allow container to size by max-width */
+      max-width: 46%; /* cap full-size attempts when revealed */
+      z-index: 70; /* Above card, below floral overlays */
+      opacity: 0;
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+      padding: 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transform-origin: center center;
+      visibility: visible;
+    }
+
+    .polaroid img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transform: none !important;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Vị trí ban đầu (ẩn trong phong bì) */
+    .pol-left { left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(0deg); }
+    .pol-right { left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(0deg); }
+
+    /* Vị trí khi BUNG ra (giống ảnh mẫu) */
+    .pol-left.revealed {
+      opacity: 1;
+      left: 6%;
+      top: -42%; /* Bay lên trên bên trái */
+      transform: rotate(-15deg);
+      width: 46%;
+    }
+
+    .pol-right.revealed {
+      opacity: 1;
+      left: 58%;
+      top: -36%; /* Bay lên trên bên phải */
+      transform: rotate(10deg);
+      width: 46%;
+    }
+
+    /* fallback: ensure any .polaroid.revealed shows at a usable size */
+    .polaroid.revealed{opacity:1;width:46%;}
+
+    /* Đĩa nhạc (Vinyl) */
+    .vinyl {
+      position: absolute;
+      width: 30%;
+      left: 50%;
+      top: 50%;
+      z-index: 20;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      transition: all 0.9s ease;
+    }
+
+    .vinyl img {
+      width: 100%;
+      transform: none !important;
+    }
+
+    .vinyl.revealed {
+      opacity: 1;
+      top: -65%; /* Bay lên cao nhất, chính giữa */
+      transform: translate(-50%, 0) rotate(360deg);
+    }
+
+    /* Điều chỉnh Z-index nắp để không che ảnh */
+    .envelope.is-open .flapWrap {
+      z-index: 10;
+    }
+
+    /* Revealed state (applied via JS) */
+    .polaroid.revealed{opacity:1;transform:translateY(-140px) rotate(-12deg) scale(1.04)}
+    .vinyl.revealed{opacity:1;transform:translate(-50%,-36%) scale(1.08)}
+
+    /* Slight adjustments when card is active */
+    .envelope.is-card-active .polaroid{transform:translateY(-160px) scale(1.06)}
+
+    /* responsive tweaks */
+    @media (max-width:680px){
+      .pol-left{left:6%;width:36%;top:54%;}
+      .pol-right{right:6%;width:36%;top:58%;}
+      .vinyl{width:36%;top:32%}
+    }
+  </style>
 </head>
-<body data-side="root">
-  <div class="introOverlay" id="introOverlay" role="dialog" aria-modal="true" aria-label="Mở thiệp" hidden>
-    <div class="introStage">
-      <div class="introKicker" aria-hidden="true">W E D D I N G&nbsp;&nbsp;I N V I T A T I O N</div>
-      <div class="introTitle">THIỆP MỜI CƯỚI</div>
-      <div class="introCouple" aria-label="Tên cô dâu chú rể">
-        <span class="introCoupleName" id="introGroomName">Tuấn Trần</span>
-        <span class="introCoupleAmp" aria-hidden="true">&amp;</span>
-        <span class="introCoupleName" id="introBrideName">Diệu Lan</span>
-      </div>
+<body>
+  <!-- SVG clip-path for curved flap edge -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <!-- Top flap: ~45deg triangle, small rounded tip -->
+      <clipPath id="flapCurve" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 L1,0 L0.5,0.88 C0.49,0.885 0.495,0.89 0.5,0.89 C0.505,0.89 0.51,0.885 0.5,0.88 Z"/>
+      </clipPath>
+      <!-- Bottom pocket: inverted triangle, mirror of flapCurve -->
+      <clipPath id="pocketBottomCurve" clipPathUnits="objectBoundingBox">
+        <path d="M0,1 L1,1 L0.5,0.12 C0.49,0.115 0.495,0.11 0.5,0.11 C0.505,0.11 0.51,0.115 0.5,0.12 Z"/>
+      </clipPath>
+      <!-- Left pocket: diagonal from top-left to center-right, wider angle -->
+      <clipPath id="pocketLeftCurve" clipPathUnits="objectBoundingBox">
+        <path d="M0,0 L1,0.55 L0,1 Z"/>
+      </clipPath>
+      <!-- Right pocket: diagonal from top-right to center-left, wider angle -->
+      <clipPath id="pocketRightCurve" clipPathUnits="objectBoundingBox">
+        <path d="M1,0 L0,0.55 L1,1 Z"/>
+      </clipPath>
+    </defs>
+  </svg>
 
-      <button class="introEnvelopeBtn" id="introOpenBtn" type="button" aria-describedby="introHint" aria-label="Mở thiệp mời">
-        <span class="introEnvelopeArt" aria-hidden="true">
-          <!-- Card/photo removed as per user request -->
-          <span class="introEnvPocket" aria-hidden="true"></span>
-          <span class="introEnvBottom" aria-hidden="true"></span>
-          <span class="introEnvMouth" aria-hidden="true"></span>
-          <span class="introEnvFlap" aria-hidden="true"></span>
-          <span class="introEnvSeal" aria-hidden="true">
-            <span class="introSealHalf introSealLeft" aria-hidden="true"></span>
-            <span class="introSealHalf introSealRight" aria-hidden="true"></span>
-          </span>
-        </span>
-      </button>
-
-      <div class="introHint" id="introHint">Chạm để mở thiệp</div>
-    </div>
-
-    <div class="introComments" id="introComments" aria-live="polite" aria-relevant="additions" aria-atomic="false"></div>
-  </div>
-  <main class="page" aria-label="Thiệp mời cưới">
-    <div class="topNav" aria-label="Thanh điều hướng">
-      <div class="topNavInner topNavInnerMenu">
-        <a class="topNavLogo" href="./" aria-label="Trang chủ">
-          <span class="logoMark" aria-hidden="true">HH</span>
-        </a>
-        <button class="menuBtn" id="menuToggle" type="button" aria-haspopup="dialog" aria-controls="menuPanel" aria-expanded="false">
-          <span class="menuIcon" aria-hidden="true"></span>
-          <span class="srOnly">Mở menu</span>
-        </button>
-      </div>
-    </div>
-    <div class="menuBackdrop" id="menuBackdrop" hidden></div>
-    <nav class="menuPanel" id="menuPanel" aria-label="Menu" hidden>
-      <a class="menuItem" href="#invite">Thiệp Mời</a>
-      <a class="menuItem" href="#couple">Chú Rể &amp; Cô Dâu</a>
-      <a class="menuItem" href="#album">Album ảnh</a>
-      <a class="menuItem" href="#events">Lịch sự kiện cưới</a>
-      <a class="menuItem" href="#wishes">Gửi lời chúc mừng</a>
-      <a class="menuItem" href="#rsvp">Xác nhận tham dự</a>
-      <a class="menuItem" href="#gift">Mừng cưới</a>
-    </nav>
-
-    <div class="paper" aria-label="Nền thiệp">
-    <section class="hero" aria-label="Mở đầu">
-      <div class="sky" aria-hidden="true"><div class="glow"></div></div>
-      <div class="heroInner">
-        <div class="heroNames" aria-label="Tên cô dâu chú rể">
-          <div class="heroKicker" id="heroKicker">THÂN MỜI TỚI DỰ BỮA TIỆC</div>
-          <span id="heroGroom">Đại Dương</span>
-          <span class="heroAmp">&amp;</span>
-          <span id="heroBride">Nguyễn Phương</span>
+  <main class="scene" aria-label="Thiệp cưới">
+    <button class="envelopeBtn" id="envelopeToggle" type="button" aria-label="Mở hoặc đóng thiệp">
+      <div class="envelopeFrame">
+        <div class="envelope" id="envelopeArt" aria-hidden="true">
+          <div class="backFlapShell" aria-hidden="true"></div>
+          <div class="backFlapPaper" aria-hidden="true"></div>
+          <div class="envelopeLiner" aria-hidden="true"></div>
+          <div class="inviteCard" aria-hidden="true"></div>
+          <!-- Polaroid photos and vinyl moved out of inviteCard so they can fly freely -->
+          <div class="polaroid pol-left" aria-hidden="true"><img src="images/10.png" alt="Photo 1" /></div>
+          <div class="polaroid pol-right" aria-hidden="true"><img src="images/11.png" alt="Photo 2" /></div>
+          <div class="vinyl" aria-hidden="true"><img src="images/12.png" alt="Vinyl record" /></div>
+          <div class="pocketBottomWrap"><div class="pocketBottom"></div></div>
+          <div class="foldLine foldTopLeft" aria-hidden="true"></div>
+          <div class="foldLine foldTopRight" aria-hidden="true"></div>
+          <div class="foldLine foldBottomLeft" aria-hidden="true"></div>
+          <div class="foldLine foldBottomRight" aria-hidden="true"></div>
+          <div class="foldCenter" aria-hidden="true"></div>
+          <div class="flapEdge flapEdgeLeft" aria-hidden="true"></div>
+          <div class="flapEdge flapEdgeRight" aria-hidden="true"></div>
+          <div class="flapOverlapShadow" aria-hidden="true"></div>
+          <div class="flapWrap">
+            <div class="flap"></div>
+          </div>
+          <div class="flapCornerShade" aria-hidden="true"></div>
+          <div class="seal"><img src="images/DP.png" alt="DP seal" class="sealImg" aria-hidden="true" /></div>
+          <div class="clickHint">Click to Open.</div>
         </div>
-
-        <div class="heroBanner" id="heroBanner" aria-label="Ảnh cưới">
-          <img class="heroBannerImg" id="heroBannerImg" alt="Ảnh cưới" loading="eager" src="images/banner.jpg" />
-        </div>
+        <!-- floral overlays placed around the envelope (uses images/flower.png) -->
+        <img src="images/flower.png" class="flower-overlay flower-top-left" alt="flower decoration" aria-hidden="true" />
+        <img src="images/flower1.png" class="flower-overlay flower-bottom-right" alt="flower decoration" aria-hidden="true" />
       </div>
-    </section>
-  <section class="section saveDate" aria-label="Save the date">
-      <div class="saveBigDate" id="saveBigDate">29.03</div>
-      <div class="saveScript" aria-hidden="true">
-        <img class="saveScriptImg" src="images/save-date.png?v=20260225a" alt="" loading="lazy" decoding="async" />
-        <svg viewBox="0 0 1000 260" role="img" focusable="false" aria-hidden="true">
-          <path class="saveLine" d="
-            M26 152
-            C120 120, 200 120, 288 146
-            C332 160, 374 166, 410 162
-            C446 158, 476 150, 500 152
-            C524 150, 554 158, 590 162
-            C626 166, 668 160, 712 146
-            C800 120, 880 120, 974 152
-          " />
-
-          <text class="saveWord" x="466" y="196" text-anchor="end">save</text>
-
-          <path class="saveHeart" d="
-            M500 184
-            C500 168, 482 160, 470 171
-            C458 183, 462 202, 478 214
-            C490 223, 500 228, 500 228
-            C500 228, 510 223, 522 214
-            C538 202, 542 183, 530 171
-            C518 160, 500 168, 500 184
-          " />
-
-          <text class="saveWord" x="534" y="196" text-anchor="start">date</text>
-        </svg>
-      </div>
-      <div class="saveTitle srOnly">SAVE THE DATE</div>
-      <h2 class="inviteHeadingTitle saveNextTitle">Thiệp Mời</h2>
-      <div class="inviteHeadingSub saveNextSub">Trân trọng kính mời!</div>
-    </section>
-    <section class="section inviteCard" id="invite" aria-label="Thiệp mời">
-      <div class="inviteFrame">
-        <div class="inviteFrameInner">
-          <div class="invitePhotoWrap" aria-label="Ảnh cô dâu chú rể">
-            <div class="invitePhotoRing">
-              <img id="invitePhoto" alt="Ảnh cô dâu chú rể" loading="lazy" src="images/banner.jpg" />
-              <div class="invitePhotoFallback" id="invitePhotoFallback" hidden></div>
-            </div>
-          </div>
-
-          <div class="inviteSaveLabel" aria-hidden="true">SAVE THE DATE</div>
-          <div class="inviteCouple" id="inviteCouple">Đại Dương &amp; Nguyễn Phương</div>
-
-          <div class="inviteHonorLine" aria-hidden="true">TRÂN TRỌNG KÍNH MỜI</div>
-          <div class="srOnly">Trân trọng kính mời</div>
-          <div class="inviteGuestName" id="guestName">bạn</div>
-
-          <div class="inviteLead" id="inviteLead">Đến dự buổi tiệc chung vui cùng gia đình chúng tôi</div>
-
-          <div class="inviteDateBlock" aria-label="Thời gian tổ chức">
-            <div class="inviteTimeLine" id="mainWhenTime">09 GIỜ 00</div>
-            <div class="inviteDateRow" aria-label="Ngày tổ chức">
-              <div class="inviteDow" id="mainWhenDow">THỨ</div>
-              <div class="inviteDayNum" id="mainWhenDay">29</div>
-              <div class="inviteMonthYear" id="mainWhenMonthYear">3 - 2026</div>
-            </div>
-            <div class="inviteLunar" id="mainLunar">(Nhằm ngày …)</div>
-            <div class="inviteWhen srOnly" id="mainWhenText">09:00 • 29/03/2026</div>
-          </div>
-
-          <div class="inviteWhere" id="mainWhereText">Tại: <span id="mainVenue">Tư gia</span></div>
-          <div class="inviteAddr" id="mainAddress">(Địa chỉ)</div>
-          <div class="inviteNote" id="inviteNote">Sự hiện diện của quý khách là niềm vinh dự cho gia đình chúng tôi!</div>
-        </div>
-      </div>
-      <div class="inviteActionsBar" aria-label="Hành động">
-        <a class="inviteActionBtn" href="#rsvp">Xác nhận tham dự</a>
-        <a class="inviteActionBtn" id="mainMapLink" href="#" target="_blank" rel="noopener">Xem bản đồ</a>
-      </div>
-    </section>
-
-  
-
-    <section class="section" id="couple" aria-label="Chú rể và cô dâu">
-      <h2 class="coupleTitle">Chú Rể &amp; Cô Dâu</h2>
-      <div class="coupleGrid" aria-label="Thông tin chú rể và cô dâu">
-        <article class="personCard" aria-label="Chú rể">
-          <div class="personPhoto">
-            <img id="groomPhoto" alt="Ảnh chú rể" loading="lazy" src="images/banner.jpg" />
-            <div class="photoFallback" id="groomPhotoFallback" hidden>CR</div>
-          </div>
-          <div class="personName" id="groomName">Đại Dương</div>
-          <div class="personParents" id="groomParents" aria-label="Thông tin bố mẹ chú rể">
-            <div><span class="parentLabel">Bố :</span> <strong>(Tên bố)</strong></div>
-            <div><span class="parentLabel">Mẹ :</span> <strong>(Tên mẹ)</strong></div>
-          </div>
-          <div class="personAddr" id="groomAddress" hidden>(Địa chỉ nhà trai)</div>
-        </article>
-
-        <article class="personCard" aria-label="Cô dâu">
-          <div class="personPhoto">
-            <img id="bridePhoto" alt="Ảnh cô dâu" loading="lazy" src="images/phuong.jpg" />
-            <div class="photoFallback" id="bridePhotoFallback" hidden>CD</div>
-          </div>
-          <div class="personName" id="brideName">Nguyễn Phương</div>
-          <div class="personParents" id="brideParents" aria-label="Thông tin bố mẹ cô dâu">
-            <div><span class="parentLabel">Bố :</span> <strong>(Tên bố)</strong></div>
-            <div><span class="parentLabel">Mẹ :</span> <strong>(Tên mẹ)</strong></div>
-          </div>
-          <div class="personAddr" id="brideAddress" hidden>(Địa chỉ nhà gái)</div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="album" aria-label="Kỷ niệm">
-      <h2 class="sectionTitle">OUR MEMORIES</h2>
-      <div class="memoriesGrid" id="memoriesGrid">
-        <div class="memoryTile" aria-label="Kỷ niệm 1"></div>
-        <div class="memoryTile" aria-label="Kỷ niệm 2"></div>
-        <div class="memoryTile" aria-label="Kỷ niệm 3"></div>
-        <div class="memoryTile" aria-label="Kỷ niệm 4"></div>
-        <div class="memoryTile" aria-label="Kỷ niệm 5"></div>
-        <div class="memoryTile" aria-label="Kỷ niệm 6"></div>
-      </div>
-    </section>
-
-    <section class="section weddingSchedule" aria-label="Đếm ngược">
-      <h2 class="sectionTitle">LỊCH CƯỚI CHÚNG MÌNH</h2>
-
-      <div class="weddingCal" aria-label="Lịch cưới">
-        <div class="calHeader">
-          <div class="calTitle" id="calTitle">THÁNG 3 - 2026</div>
-          <div class="calNav" aria-label="Điều hướng tháng">
-            <button class="calNavBtn" type="button" id="calPrev" aria-label="Tháng trước">‹</button>
-            <button class="calNavBtn" type="button" id="calNext" aria-label="Tháng sau">›</button>
-          </div>
-        </div>
-
-        <div class="calWeekdays" aria-hidden="true">
-          <div>T2</div>
-          <div>T3</div>
-          <div>T4</div>
-          <div>T5</div>
-          <div>T6</div>
-          <div>T7</div>
-          <div>CN</div>
-        </div>
-
-        <div class="calGrid" id="calGrid" role="grid" aria-label="Lịch tháng"></div>
-      </div>
-
-      <div class="calWhen" id="calWhenText">09:00 Chủ Nhật, Ngày 29/03/2026</div>
-      <div class="calLunar" id="calLunarText">(Tức ngày 00/00)</div>
-
-      <div class="countdownTarget countdownTargetRaw" id="countdownTargetText">09:00 • 29/03/2026</div>
-      <div class="countdown" role="timer" aria-live="polite">
-        <div class="cdItem"><div class="cdNum" id="cdDays">00</div><div class="cdLabel">Ngày</div></div>
-        <div class="cdItem"><div class="cdNum" id="cdHours">00</div><div class="cdLabel">Giờ</div></div>
-        <div class="cdItem"><div class="cdNum" id="cdMinutes">00</div><div class="cdLabel">Phút</div></div>
-        <div class="cdItem"><div class="cdNum" id="cdSeconds">00</div><div class="cdLabel">Giây</div></div>
-      </div>
-    </section>
-
-    <section class="section storySection" aria-label="Lời ngỏ">
-      <div class="storyCard" role="note" aria-label="Lời ngỏ">
-        <div class="storyBg" aria-hidden="true"></div>
-        <div class="storyOverlay" aria-hidden="true"></div>
-        <div class="storyContent">
-          <h2 class="storyHeading">Lời Ngỏ</h2>
-          <div class="storyText" id="storyText">
-            Thật là vinh hạnh và trọn vẹn khi ngày hạnh phúc nhất cuộc đời chúng tôi có sự hiện diện và chúc phúc của bạn. Chân thành cảm ơn!
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="wishes" aria-label="Gửi lời chúc">
-      <h2 class="sectionTitle">GỬI LỜI CHÚC ĐẾN CẶP ĐÔI</h2>
-      <div class="wishesLead">Gửi lời chúc cho Dâu Rể</div>
-      <a class="btnSecondary" id="wishesLink" href="#" target="_blank" rel="noopener">Gửi lời chúc</a>
-    </section>
-
-    <section class="section" id="events" aria-label="Sự kiện cưới">
-      <h2 class="sectionTitle">SỰ KIỆN CƯỚI</h2>
-      <div class="eventsGrid">
-        <article class="eventCard eventCard--animated" aria-label="Lễ Cưới">
-            <div class="eventRoadWrap">
-              <img
-                class="eventRouteImg"
-                src="images/lenaptai.jpg"
-                alt="Đường đi từ nhà trai đến nhà gái"
-                loading="lazy"
-              />
-            </div>
-          <div class="eventActions">
-            <a class="btnPrimary eventMapBtn" id="e2Map" href="#" target="_blank" rel="noopener">Chỉ đường</a>
-            <a class="btnSecondary" href="#rsvp">Xác nhận tham dự</a>
-          </div>
-        </article>
-
-        <article class="eventCard eventCard--animated" aria-label="Lễ Nạp Tài">
-            <div class="eventRoadWrap">
-              <img
-                class="eventRouteImg"
-                src="images/lethanhhon.jpg"
-                alt="Đường đi từ nhà trai đến nhà gái"
-                loading="lazy"
-              />
-            </div>
-          <div class="eventActions">
-            <a class="btnPrimary eventMapBtn" id="e3Map" href="#" target="_blank" rel="noopener">Chỉ đường</a>
-            <a class="btnSecondary" href="#rsvp">Xác nhận tham dự</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="rsvp" aria-label="Xác nhận tham dự">
-      <h2 class="sectionTitle">HÃY XÁC NHẬN SỰ CÓ MẶT CỦA BẠN</h2>
-      <form class="rsvp" id="rsvpForm">
-        <div class="rsvpGrid">
-          <label class="rsvpField">
-            <div class="rsvpLabel">Họ tên của bạn</div>
-            <input class="rsvpInput" id="rsvpName" type="text" autocomplete="name" />
-          </label>
-          <label class="rsvpField">
-            <div class="rsvpLabel">Số điện thoại</div>
-            <input class="rsvpInput" id="rsvpPhone" type="tel" autocomplete="tel" />
-          </label>
-          <label class="rsvpField">
-            <div class="rsvpLabel">Bạn là khách mời của ai?</div>
-            <select class="rsvpInput" id="rsvpSide">
-              <option value="">Chọn…</option>
-              <option value="nhatrai">Nhà trai</option>
-              <option value="nhagai">Nhà gái</option>
-            </select>
-          </label>
-          <label class="rsvpField">
-            <div class="rsvpLabel">Bạn sẽ tham gia chứ?</div>
-            <select class="rsvpInput" id="rsvpAttend">
-              <option value="">Chọn…</option>
-              <option value="yes">Có, tôi sẽ tham gia</option>
-              <option value="no">Xin lỗi, tôi bận mất rồi!</option>
-            </select>
-          </label>
-        </div>
-        <div class="rsvpActions">
-          <button class="btnPrimary" type="submit" id="rsvpSubmit">Gửi xác nhận</button>
-        </div>
-        <div class="rsvpHint" id="rsvpHint">Thiệp này không có máy chủ. Bạn có thể cấu hình link RSVP qua URL param.</div>
-      </form>
-    </section>
-
-    <section class="section" id="gift" aria-label="Mừng cưới">
-      <h2 class="sectionTitle">MỪNG CƯỚI</h2>
-      <div class="giftLead">Nếu bạn muốn gửi quà mừng, bạn có thể dùng thông tin bên dưới.</div>
-      <div class="giftBox" role="note" aria-label="Thông tin mừng cưới">
-        <div><strong>Ngân hàng:</strong> (Tên ngân hàng)</div>
-        <div><strong>Số tài khoản:</strong> (Số tài khoản)</div>
-        <div><strong>Chủ tài khoản:</strong> (Tên chủ tài khoản)</div>
-      </div>
-    </section>
-
-    <footer class="pageFooter" aria-label="Lời cảm ơn">
-      <div class="footerThanks" id="footerThanks">Thank You! Sự hiện diện của quý vị là niềm vinh hạnh cho gia đình chúng tôi.</div>
-      <div class="footerBrand" id="footerBrand">HAPPY WEDDING</div>
-    </footer>
-    </div>
+    </button>
+    <div class="dateText">29.03.2026</div>
   </main>
 
-  <button class="musicBtn" id="musicToggle" type="button" aria-label="Phát nhạc" aria-pressed="false" hidden>
-    <span class="srOnly">Phát nhạc</span>
-    <svg class="musicIcon musicIconPlay" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M8 5v14l11-7z" />
-    </svg>
-    <svg class="musicIcon musicIconPause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-    </svg>
-  </button>
-  <audio id="bgm" preload="none" loop autoplay src="images/Until%20You.mp3"></audio>
+  <script>
+    (function () {
+      var btn = document.getElementById('envelopeToggle');
+      var envelope = document.getElementById('envelopeArt');
+      var card = document.querySelector('.inviteCard');
+      if (!btn || !envelope) return;
 
-  <script src="firebase-config.js?v=light-20260226db1"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="firebase-wedding-db.js?v=light-20260226db1"></script>
-  <script src="script-wedding.js?v=light-20260226db1"></script>
+      btn.addEventListener('click', function () {
+        envelope.classList.toggle('is-open');
+        envelope.classList.remove('is-card-active');
+        document.querySelector('.scene').classList.toggle('is-open', envelope.classList.contains('is-open'));
+      });
+      if(card){
+        card.addEventListener('click', function(e){
+          if(envelope.classList.contains('is-open')){
+            envelope.classList.toggle('is-card-active');
+            e.stopPropagation();
+          }
+        });
+      }
+    })();
+    /* Remove near-white background for polaroid/vinyl images at runtime.
+       Mirrors flower removal but uses a slightly lower threshold (235)
+       to catch off-white areas while preserving subtle shadows. */
+    (function removePolaroidBackgrounds(){
+      if (!window.HTMLCanvasElement) return;
+      window.addEventListener('load', function(){
+        var imgs = document.querySelectorAll('.polaroid img, .vinyl img');
+        imgs.forEach(function(img){
+          try{
+            var src = img.getAttribute('src') || img.src;
+            if(!src) return;
+            var tmp = new Image();
+            tmp.crossOrigin = 'anonymous';
+            tmp.onload = function(){
+              var w = tmp.naturalWidth || tmp.width;
+              var h = tmp.naturalHeight || tmp.height;
+              if(!w || !h) return;
+              var c = document.createElement('canvas'); c.width = w; c.height = h;
+              var cx = c.getContext('2d'); cx.drawImage(tmp,0,0);
+              try{ var id = cx.getImageData(0,0,w,h); }catch(e){ return; }
+              var d = id.data; var t = 235; // threshold
+              for(var i=0;i<d.length;i+=4){
+                var r=d[i], g=d[i+1], b=d[i+2];
+                if(r>=t && g>=t && b>=t){ d[i+3] = 0; }
+              }
+              cx.putImageData(id,0,0);
+              try{ img.src = c.toDataURL('image/png'); }catch(e){}
+            };
+            tmp.src = src + (src.indexOf('?') === -1 ? '?_=' + Date.now() : '&_=' + Date.now());
+          }catch(e){}
+        });
+      });
+    })();
+    // Interactive nudge tool for floral overlays
+    (function(){
+      var selected = null;
+      var panel = document.createElement('div');
+      panel.id = 'tweakPanel';
+      panel.style.cssText = 'position:fixed;right:14px;bottom:14px;padding:8px 10px;background:rgba(0,0,0,0.6);color:#fff;border-radius:6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;z-index:9999;display:none;';
+      panel.innerHTML = '<div id="tweakLabel">Selected: <span id="tweakName">-</span></div>' +
+        '<div style="margin-top:6px">Left: <span id="tweakLeft">0</span>px • Top: <span id="tweakTop">0</span>px</div>' +
+        '<div style="margin-top:8px;text-align:right"><button id="tweakCopy" style="margin-right:6px">Copy CSS</button><button id="tweakClose">Close</button></div>';
+      document.body.appendChild(panel);
+      var lbl = document.getElementById('tweakLabel');
+      var nameEl = document.getElementById('tweakName');
+      var leftEl = document.getElementById('tweakLeft');
+      var topEl = document.getElementById('tweakTop');
+      var copyBtn = document.getElementById('tweakCopy');
+      var closeBtn = document.getElementById('tweakClose');
+
+      function showPanel(forEl){
+        selected = forEl;
+        panel.style.display = 'block';
+        nameEl.textContent = forEl.className.split(' ').join(', ');
+        updateValues();
+      }
+      function hidePanel(){ panel.style.display='none'; selected=null; }
+      function updateValues(){
+        if(!selected) return;
+        var cs = window.getComputedStyle(selected);
+        var left = parseFloat(cs.left) || 0;
+        var top = parseFloat(cs.top) || 0;
+        leftEl.textContent = Math.round(left);
+        topEl.textContent = Math.round(top);
+      }
+
+      document.querySelectorAll('.flower-overlay').forEach(function(img){
+        img.style.cursor='move';
+        img.addEventListener('click', function(e){
+          e.stopPropagation();
+          showPanel(img);
+        });
+      });
+
+      window.addEventListener('keydown', function(e){
+        if(!selected) return;
+        var step = e.shiftKey ? 10 : 2;
+        var cs = window.getComputedStyle(selected);
+        var left = parseFloat(cs.left) || 0;
+        var top = parseFloat(cs.top) || 0;
+        if(e.key === 'ArrowLeft') { left -= step; }
+        else if(e.key === 'ArrowRight') { left += step; }
+        else if(e.key === 'ArrowUp') { top -= step; }
+        else if(e.key === 'ArrowDown') { top += step; }
+        else if(e.key === 'Escape') { hidePanel(); }
+        else return;
+        selected.style.left = left + 'px';
+        selected.style.top = top + 'px';
+        updateValues();
+        e.preventDefault();
+      });
+
+      copyBtn.addEventListener('click', function(){
+        if(!selected) return;
+        var cls = selected.className.split(' ').join('.');
+        var cs = window.getComputedStyle(selected);
+        var left = cs.left; var top = cs.top; var w = cs.width; var transform = cs.transform;
+        var css = '.' + selected.className.split(' ').join('.') + ' { left: ' + left + '; top: ' + top + '; width: ' + w + '; transform: ' + transform + '; }';
+        navigator.clipboard && navigator.clipboard.writeText(css);
+        copyBtn.textContent = 'Copied';
+        setTimeout(function(){ copyBtn.textContent='Copy CSS'; },1200);
+      });
+      closeBtn.addEventListener('click', hidePanel);
+      // click outside to deselect
+      document.addEventListener('click', function(){ hidePanel(); });
+    })();
+    /* Remove near-white background from overlay images at runtime.
+       Creates a temporary canvas, converts near-white pixels to transparent,
+       and replaces the image src with a data URL PNG. */
+    (function removeFlowerBackgrounds(){
+      if (!window.HTMLCanvasElement) return;
+      var imgs = document.querySelectorAll('.flower-overlay');
+      imgs.forEach(function(img){
+        try{
+          var src = img.src;
+          var tmp = new Image();
+          tmp.crossOrigin = 'anonymous';
+          tmp.onload = function(){
+            var w = tmp.naturalWidth || tmp.width;
+            var h = tmp.naturalHeight || tmp.height;
+            if (!w || !h) return;
+            var c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            var cx = c.getContext('2d');
+            cx.drawImage(tmp,0,0);
+            try{
+              var id = cx.getImageData(0,0,w,h);
+            }catch(e){
+              return; // cross-origin or security error
+            }
+            var d = id.data;
+            // threshold: how close to white a pixel must be to be removed
+            var t = 250; // 0-255 (higher = stricter white)
+            for(var i=0;i<d.length;i+=4){
+              var r=d[i], g=d[i+1], b=d[i+2];
+              // if pixel is nearly white, make it transparent
+              if(r>=t && g>=t && b>=t){
+                d[i+3] = 0;
+              }
+            }
+            cx.putImageData(id,0,0);
+            try{
+              img.src = c.toDataURL('image/png');
+            }catch(e){
+              // ignore
+            }
+          };
+          tmp.src = src;
+        }catch(e){
+          // fail silently
+        }
+      });
+    })();
+    /* Ensure polaroid/vinyl images load the updated (server-processed) files.
+       Server-side scripts in `tools/` now write transparent PNGs; this forces
+       the browser to reload them (cache-bust) on page load. */
+    (function refreshPolaroids(){
+      window.addEventListener('load', function(){
+        var imgs = document.querySelectorAll('.polaroid img, .vinyl img');
+        imgs.forEach(function(img){
+          try{
+            var src = img.getAttribute('src') || img.src;
+            if(!src) return;
+            img.src = src + (src.indexOf('?') === -1 ? '?_=' + Date.now() : '&_=' + Date.now());
+          }catch(e){}
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function(){
+      var btn = document.getElementById('envelopeToggle');
+      var env = document.getElementById('envelopeArt');
+      var seal = document.querySelector('.seal');
+      var left = document.querySelector('.pol-left');
+      var right = document.querySelector('.pol-right');
+      var vinyl = document.querySelector('.vinyl');
+      // optional click/flip sound (place file at sounds/flip.mp3 if desired)
+      var flipSound = null;
+      try{ flipSound = new Audio('sounds/flip.mp3'); }catch(e){ flipSound = null; }
+
+      function revealSequence(opening){
+        if(opening){
+          // seal slides down then hides
+          if(seal){
+            seal.style.transition = 'transform .44s ease, opacity .32s ease';
+            seal.style.transform = 'translate(-50%, 52%) scale(.94)';
+            seal.style.opacity = '0';
+            setTimeout(function(){ if(seal) seal.style.display = 'none'; },420);
+          }
+          // stagger reveals
+          setTimeout(function(){ left && left.classList.add('revealed'); },420);
+          setTimeout(function(){ right && right.classList.add('revealed'); },680);
+          setTimeout(function(){ vinyl && vinyl.classList.add('revealed'); },960);
+          try{ flipSound && flipSound.play(); }catch(e){}
+        } else {
+          // closing: hide items and restore seal
+          left && left.classList.remove('revealed');
+          right && right.classList.remove('revealed');
+          vinyl && vinyl.classList.remove('revealed');
+          if(seal){ seal.style.display = 'block';
+            // small timeout to allow display->visible transition
+            setTimeout(function(){ seal.style.transition = 'transform .44s ease, opacity .32s ease'; seal.style.transform = 'translate(-50%, -50%)'; seal.style.opacity = '1'; },60);
+          }
+        }
+      }
+
+      if(btn && env){
+        btn.addEventListener('click', function(){
+          // Wait a tick because the original handler toggles .is-open first
+          setTimeout(function(){ revealSequence(env.classList.contains('is-open')); }, 10);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
