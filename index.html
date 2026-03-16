@@ -247,10 +247,10 @@
     .vinyl img{ width:100%; display:block; background:transparent; }
     .vinyl.revealed{ cursor:pointer; }
     @keyframes vinylSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
-    .vinyl.spinning img{ animation:vinylSpin 3s linear infinite; transform-origin:center; }
+    .vinyl.spinning img, .vinyl.playing img{ animation:vinylSpin 3s linear infinite; transform-origin:center; }
     .vinyl.revealed{
-      opacity:1; z-index:80;
-      left:50%; bottom:58%; width:62%; transform:translateX(-50%) rotate(4deg);
+      opacity:1; z-index:110;
+      left:50%; bottom:52%; width:clamp(260px,78%,900px); transform:translateX(-50%) rotate(4deg);
     }
 
     /* Đóng: ẩn thiệp/ảnh (dùng envelopeWrap) */
@@ -621,7 +621,7 @@
     .rsvp-wrap.card-visible{ opacity:1; transform:translateY(0); }
     .rsvp-note{
       font-family:"Cormorant Garamond",serif;
-      font-style:italic; font-size:16px;
+      font-style:italic; font-size:18px;
       color:#888; margin-bottom:24px; line-height:1.8;
     }
     .btn-rsvp{
@@ -928,8 +928,8 @@
   </svg>
 
   <!-- Audio player -->
-  <audio id="weddingMusic" loop>
-    <source src="images/utilyou.mp3" type="audio/mpeg"/>
+  <audio id="weddingMusic" loop preload="auto">
+    <source src="images/Until You.mp3" type="audio/mpeg"/>
   </audio>
 
   <main class="scene" aria-label="Thiệp cưới">
@@ -967,47 +967,64 @@
     <!-- Cards: 2 ảnh trên, 5 ảnh gallery dưới -->
     <div class="cardsSection" id="cardsSection">
 
-      <!-- Lễ Nạp Tài — designed to match provided image -->
+      <!-- Lễ Nạp Tài — overlayed on photo (L1031695) -->
       <style>
-        .lnt-hero { display:flex; justify-content:center; margin:18px 0 22px; }
-        .lnt-card-wrap { max-width:520px; width:min(92vw,520px); }
-        .lnt-card-inner {
-          background: linear-gradient(180deg,#f7f9f6 0%, #fff 60%);
-          border-radius: 40px 40px 18px 18px; padding:36px 28px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-          border: 6px solid rgba(36,96,81,0.12);
-          text-align:center; color:#184b3f; font-family: 'Playfair Display', Georgia, serif;
-        }
-        .lnt-top{ font-size:13px; letter-spacing:2px; color:#2f6b5e; margin-bottom:6px; }
-        .lnt-heading{ font-family: 'Great Vibes', cursive; font-size:36px; color:#1d4f40; margin-bottom:6px; }
-        .lnt-sub{ font-size:16px; color:#31614f; margin-bottom:14px; }
-        .lnt-names{ font-size:20px; display:flex; justify-content:center; gap:10px; align-items:center; margin-bottom:14px }
-        .lnt-amp{ font-size:18px; color:#a44f3a }
-        .lnt-date-block{ display:block; background:transparent; margin:6px auto 14px; padding:12px 0; }
-        .lnt-month{ font-size:16px; color:#2f6b5e }
-        .lnt-day{ font-size:clamp(48px,10vw,96px); font-weight:700; color:#1d4f40; margin:6px 0 }
-        .lnt-year{ font-size:18px; color:#2f6b5e }
-        .lnt-when{ display:flex; justify-content:space-between; gap:12px; color:#2b5f4f; font-size:16px; margin-top:6px }
-        .lnt-illustration{ margin:14px 0 8px }
-        .lnt-quote{ font-family: 'Great Vibes', cursive; color:#3a6a5a; font-size:20px; opacity:0.9; margin-top:8px }
-        @media (max-width:420px){ .lnt-card-inner{ padding:22px 18px; border-radius:28px } .lnt-heading{font-size:28px} }
+        /* Overlay layout: image with info box at top-right */
+        .lnt-hero-overlay{ margin:18px 0 22px; display:flex; justify-content:center }
+        .lnt-overlay-wrap{ max-width:820px; width:min(88vw,820px); position:relative; border-radius:14px; overflow:visible; margin-top:8px }
+        .lnt-overlay-wrap .lnt-bg{ position:relative; border-radius:12px; overflow:hidden }
+        .lnt-overlay-wrap .lnt-bg img{ display:block; width:100%; height:600px; object-fit:cover; transform:none; border-radius:12px; box-shadow:0 18px 44px rgba(10,10,10,0.12) }
+        .lnt-bg-overlay{ position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.08) 0%, rgba(50,20,18,.48) 50%, rgba(80,30,26,.7) 100%); pointer-events:none }
+
+        /* mirror inv-hero visual language but keep top-right layout */
+        .lnt-overlay-content{ position:absolute; top:22px; right:22px; left:auto; transform:none; width:min(42%,340px); background:transparent; border-radius:10px; padding:22px 18px; color:rgba(255,255,255,0.98); font-family:'Cormorant Garamond', serif; text-align:center; animation:lnt-pop 560ms cubic-bezier(.2,.9,.3,1) both; text-shadow:0 2px 10px rgba(0,0,0,.45) }
+        .lnt-overlay-content .lnt-foil{ position:absolute; left:50%; right:auto; top:-18px; transform:translateX(-50%); filter:brightness(1.08) saturate(1.05) }
+        .lnt-overlay-title{ font-family:'Great Vibes',cursive; font-size:36px; color:white; margin-bottom:6px; text-shadow:0 3px 8px rgba(0,0,0,.6) }
+        .lnt-overlay-sub{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:13px; color:rgba(255,255,255,.85); margin-bottom:8px }
+        .lnt-overlay-names{ display:flex; align-items:center; gap:10px; justify-content:flex-end; font-size:16px; color:rgba(255,255,255,.96); margin-bottom:8px }
+        /* Nudge individual meta lines for visual balance */
+        .lnt-overlay-names{ transform:translateX(-34px); }
+        /* Use a serif that supports Vietnamese glyphs first, then Cinzel */
+        .lnt-overlay-meta{ font-family:'Cormorant Garamond','Cinzel',serif; font-size:15px; color:rgba(255,230,200,.95); letter-spacing:0.6px; text-align:center; line-height:1.15 }
+        .lnt-overlay-meta > div{ display:block; }
+        .lnt-overlay-meta > div:nth-child(2){ transform:translateX(12px); }
+        .lnt-overlay-meta > div:nth-child(3){ transform:translateX(8px); }
+        .lnt-overlay-meta .lnt-day{ min-width:64px; height:64px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,245,235,0.95)); color:#7a0a0a; font-weight:800; box-shadow:0 8px 20px rgba(0,0,0,0.25); margin:12px auto 0 }
+
+        /* Keep each meta line on a single row on larger screens */
+        .lnt-overlay-meta > div{ white-space:nowrap; }
+
+           @media(max-width:900px){ .lnt-overlay-content{ width:48% } 
+            .lnt-overlay-wrap .lnt-bg img{ height:520px } }
+           @media(max-width:720px){ .lnt-overlay-wrap{ width:calc(100% - 28px); max-width:100% }
+             .lnt-overlay-content{ position:relative; top:auto; right:auto; margin:14px; width:calc(100% - 28px); text-align:center; background:linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)) }
+             .lnt-overlay-title{ font-size:30px } .lnt-overlay-meta .lnt-day{ margin-left:0 }
+             .lnt-overlay-wrap .lnt-bg img{ height:auto; max-height:600px }
+             .lnt-overlay-meta > div{ white-space:normal; font-size:14px }
+           }
       </style>
 
-      <section class="lnt-hero cs-item from-bottom" data-delay="0" aria-label="Lễ Nạp Tài">
-        <div class="lnt-card-wrap">
-          <div class="lnt-card-inner">
-            <div class="lnt-top">TRÂN TRỌNG KÍNH MỜI</div>
-            <div class="lnt-heading">Bạn và Người thương</div>
-            <div class="lnt-sub">Tham dự Lễ Nạp Tài</div>
-            <div class="lnt-names"><span>Ngọc Duyên</span><span class="lnt-amp">&amp;</span><span>Mạnh Quân</span></div>
-            <div class="lnt-date-block">
-              <div class="lnt-month">Tháng 12</div>
-              <div class="lnt-day">14</div>
-              <div class="lnt-year">Năm 2025</div>
+      <section class="lnt-hero-overlay cs-item from-bottom" data-delay="0" aria-label="Lễ Nạp Tài">
+        <div class="lnt-overlay-wrap">
+          <div class="lnt-bg">
+            <img src="images/L1031695.JPG" alt="Lễ Nạp Tài"/>
+            <div class="lnt-bg-overlay"></div>
+          </div>
+          <div class="lnt-overlay-content" role="region" aria-label="Thông tin Lễ Nạp Tài">
+            <div class="lnt-foil" aria-hidden="true"></div>
+
+            <div class="lnt-overlay-sub">TRÂN TRỌNG KÍNH MỜI</div>
+            <div class="lnt-overlay-title">Lễ Nạp Tài</div>
+            <div class="lnt-overlay-names">Đại Dương &amp; Nguyên Phương</div>
+
+            <div class="lnt-overlay-meta" style="margin-top:8px">
+              <div style="font-family:'Cinzel',serif;font-weight:700;letter-spacing:1px">14 GIỜ 30' &nbsp;|&nbsp; 26.03.2026 &nbsp;|&nbsp; THỨ NĂM</div>
+              <div style="font-style:italic;opacity:.9;margin-top:6px">Tức ngày 08 tháng 02 năm Bính Ngọ</div>
+              <div style="margin-top:8px;font-weight:600">Tại: Gia đình Nhà Gái · Bính Ngọ</div>
             </div>
-            <div class="lnt-when"><div>Chủ Nhật</div><div>12h00</div></div>
-            <div class="lnt-illustration" aria-hidden="true">👰‍♀️🤵‍♂️</div>
-            <div class="lnt-quote">Hôn nhân là chuyện cả đời</div>
+
+            <!-- dinner section removed per request -->
+
           </div>
         </div>
       </section>
@@ -1015,19 +1032,19 @@
       <!-- 5 ảnh gallery bên dưới -->
       <div class="gallery" style="margin-top:32px">
         <div class="gallery-item tall cs-item from-left" data-delay="0">
-          <img src="images/gallery1.jpg" alt=""/>
+          <img src="images/13.jpg" alt=""/>
         </div>
         <div class="gallery-item cs-item from-bottom" data-delay="150">
-          <img src="images/gallery2.jpg" alt=""/>
+          <img src="images/17.jpg" alt=""/>
         </div>
         <div class="gallery-item cs-item from-right" data-delay="200">
-          <img src="images/gallery3.jpg" alt=""/>
+          <img src="images/18.jpg" alt=""/>
         </div>
         <div class="gallery-item offset cs-item from-bottom" data-delay="300">
-          <img src="images/gallery4.jpg" alt=""/>
+          <img src="images/19.jpg" alt=""/>
         </div>
         <div class="gallery-item cs-item from-right" data-delay="350">
-          <img src="images/gallery5.jpg" alt=""/>
+          <img src="images/16.jpg" alt=""/>
         </div>
       </div>
 
@@ -1057,11 +1074,11 @@
             <svg viewBox="0 0 200 16" style="width:160px"><line x1="0" y1="8" x2="75" y2="8" stroke="rgba(255,255,255,.5)" stroke-width="0.8"/><circle cx="100" cy="8" r="4" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1"/><circle cx="100" cy="8" r="1.5" fill="rgba(255,255,255,.7)"/><line x1="125" y1="8" x2="200" y2="8" stroke="rgba(255,255,255,.5)" stroke-width="0.8"/></svg>
           </div>
           <div class="inv-hero-date">29 · 03 · 2026</div>
-          <div class="inv-hero-lunar">Tác ngày 11 tháng 02 năm Bính Ngọ · Chủ Nhật</div>
+          <div class="inv-hero-lunar">Tức ngày 11 tháng 02 năm Bính Ngọ · Chủ Nhật</div>
           <div class="inv-hero-where">
             <span>🕗 8 Giờ 30</span>
             <span class="inv-hero-dot">·</span>
-            <span>📍 Nhà Trai · Bình Ngô</span>
+            <span>📍 Nhà Trai · Bính Ngọ</span>
           </div>
         </div>
       </div>
@@ -1083,7 +1100,7 @@
           <div class="prog-list">
             <!-- Item 1 -->
             <div class="prog-item-card">
-              <div class="prog-item-time">3:00 PM</div>
+              <div class="prog-item-time">8:30 AM</div>
               <div class="prog-item-sep">
                 <div class="prog-vline top"></div>
                 <div class="prog-icon-wrap">
@@ -1103,7 +1120,7 @@
 
             <!-- Item 2 -->
             <div class="prog-item-card">
-              <div class="prog-item-time">4:00 PM</div>
+              <div class="prog-item-time">10:30 AM</div>
               <div class="prog-item-sep">
                 <div class="prog-vline top"></div>
                 <div class="prog-icon-wrap">
@@ -1125,7 +1142,7 @@
 
             <!-- Item 3 -->
             <div class="prog-item-card">
-              <div class="prog-item-time">5:00 PM</div>
+              <div class="prog-item-time">11:00 AM</div>
               <div class="prog-item-sep">
                 <div class="prog-vline top"></div>
                 <div class="prog-icon-wrap">
@@ -1144,7 +1161,7 @@
 
             <!-- Item 4 -->
             <div class="prog-item-card">
-              <div class="prog-item-time">8:00 PM</div>
+              <div class="prog-item-time">12:00 PM</div>
               <div class="prog-item-sep">
                 <div class="prog-vline top"></div>
                 <div class="prog-icon-wrap">
@@ -1201,13 +1218,13 @@
             <!-- Google Maps embed nhà trai -->
             <div class="family-map-embed">
               <iframe
-                src="https://maps.google.com/maps?q=Phường+Hạc+Thành,+Thành+phố+Thanh+Hóa,+Việt+Nam&output=embed&hl=vi&z=15"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6313.697765191177!2d105.77817530624395!3d19.791357293848712!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3136f900202b0ce5%3A0x6e5f1502cccf3f3b!2zQuG6o25nIFTDqm4gxJDGsOG7nW5nIEzDqiBUcuG7jW5nIELDrWNo!5e0!3m2!1svi!2s!4v1773655892632!5m2!1svi!2s"
                 allowfullscreen loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade">
               </iframe>
             </div>
             <a class="family-map-btn"
-               href="https://www.google.com/maps/search/?api=1&query=06+93+Tạnh+Xá+Phường+Hạc+Thành+Thanh+Hóa"
+               href="https://maps.app.goo.gl/8R7iynaVPbHNV9G98"
                target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;margin-right:5px;vertical-align:middle"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg>
               Mở Google Maps
@@ -1237,13 +1254,13 @@
             <!-- Google Maps embed nhà gái -->
             <div class="family-map-embed">
               <iframe
-                src="https://maps.google.com/maps?q=Sầm+Sơn,+Thanh+Hóa,+Việt+Nam&output=embed&hl=vi&z=15"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3755.375273205851!2d105.89043277878254!3d19.739204383414762!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313651841cdd0d8d%3A0xb35851013c7bd002!2zNDkgTeG6oWMgVGjhu4sgQsaw4bufaSwgUC4gQuG6r2MgU8ahbiwgU-G6p20gU8ahbiwgVGhhbmggSMOzYSwgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1773656099122!5m2!1svi!2s"
                 allowfullscreen loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade">
               </iframe>
             </div>
             <a class="family-map-btn"
-               href="https://www.google.com/maps/search/?api=1&query=49+Mạc+Thị+Bưởi+Sầm+Sơn+Thanh+Hóa"
+               href="https://www.google.com/maps/place/49+M%C3%A1c+Th%E1%BB%8B+B%C6%B0%E1%BB%9Di,+%C4%90a+N%E1%BA%A1ng+Th%E1%BB%8B/@19.7392044,105.8904328,15z"
                target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;margin-right:5px;vertical-align:middle"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg>
               Mở Google Maps
@@ -1255,9 +1272,6 @@
       <!-- RSVP -->
       <div class="rsvp-wrap" id="rsvpWrap">
         <p class="rsvp-note">Sự hiện diện của quý vị là niềm hạnh phúc lớn nhất<br>trong ngày trọng đại của chúng tôi.</p>
-        <button class="btn-rsvp" onclick="this.textContent='✓ Đã ghi nhận!'; setTimeout(()=>this.textContent='Xác nhận tham dự',2500)">
-          Xác nhận tham dự
-        </button>
       </div>
 
     </div>
@@ -1276,11 +1290,25 @@
       btn.addEventListener('click', function(){
         env.classList.toggle('is-open');
         env.classList.remove('is-card-active');
-        document.querySelector('.scene').classList.toggle('is-open', env.classList.contains('is-open')); /* unused */
+        var isOpen = env.classList.contains('is-open');
+        document.querySelector('.scene').classList.toggle('is-open', isOpen);
         // Toggle is-open trên envelopeWrap để clip/unclip
         var wrap = document.querySelector('.envelopeWrap');
-        if(wrap) wrap.classList.toggle('is-open', env.classList.contains('is-open'));
-        if(flapEl) flapEl.classList.toggle('flap-open', env.classList.contains('is-open'));
+        if(wrap) wrap.classList.toggle('is-open', isOpen);
+        if(flapEl) flapEl.classList.toggle('flap-open', isOpen);
+
+        // Play/pause wedding music when envelope opens/closes (user click counts as interaction)
+        try{
+          var audio = document.getElementById('weddingMusic');
+          if(audio){
+            if(isOpen){
+              audio.play().catch(function(e){});
+            } else {
+              audio.pause();
+              try{ audio.currentTime = 0; }catch(e){}
+            }
+          }
+        }catch(e){}
       });
 
       if(card){
@@ -1442,27 +1470,7 @@
       window.addEventListener('resize', positionSealTap);
     })();
 
-    /* Vinyl phát nhạc khi click */
-    (function(){
-      var vinylEl = document.querySelector('.vinyl');
-      var audio = new Audio('images/utilyou.mp3');
-      audio.loop = true;
-      var playing = false;
-      if(vinylEl){
-        vinylEl.addEventListener('click', function(e){
-          e.stopPropagation();
-          if(!playing){
-            audio.play().catch(function(){});
-            vinylEl.classList.add('spinning');
-            playing = true;
-          } else {
-            audio.pause();
-            vinylEl.classList.remove('spinning');
-            playing = false;
-          }
-        });
-      }
-    })();
+    /* Removed duplicate audio instance — clicks use the #weddingMusic element below */
 
     /* Click vinyl phát/dừng nhạc */
     (function(){
